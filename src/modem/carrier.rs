@@ -1,0 +1,21 @@
+pub trait Carrier {
+    fn inner(&self, t: u32) -> f64;
+}
+
+pub struct Basic {
+    sample_freq: f64,
+}
+
+impl Basic {
+    pub fn new(freq: f64) -> Basic {
+        Basic {
+            sample_freq: freq,
+        }
+    }
+}
+
+impl Carrier for Basic {
+    fn inner(&self, t: u32) -> f64 {
+        self.sample_freq * t as f64
+    }
+}
