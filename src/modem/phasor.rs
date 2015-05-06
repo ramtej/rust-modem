@@ -7,6 +7,14 @@ pub trait Phasor {
     fn update(&mut self, _s: u32, _b: u8) {}
 }
 
+fn bit_to_sign(b: u8) -> f64 {
+    if b == 0 {
+        -1.0
+    } else {
+        1.0
+    }
+}
+
 pub struct BPSK {
     phase: f64,
     amplitude: f64,
@@ -20,16 +28,8 @@ impl BPSK {
         }
     }
 
-    fn bit_to_sign(b: u8) -> f64 {
-        if b == 0 {
-            1.0
-        } else {
-            -1.0
-        }
-    }
-
     fn common(&self, b: u8) -> f64 {
-        BPSK::bit_to_sign(b) * self.amplitude
+        bit_to_sign(b) * self.amplitude
     }
 }
 
