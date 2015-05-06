@@ -128,3 +128,37 @@ impl Phasor for BFSK {
         self.prev = b[0];
     }
 }
+
+pub struct QPSK {
+    phase_cos: f64,
+    phase_sin: f64,
+    amplitude: f64,
+}
+
+impl QPSK {
+    pub fn new(phase: f64, amplitude: f64) -> QPSK {
+        QPSK {
+            phase_cos: phase.cos(),
+            phase_sin: phase.sin(),
+            amplitude: amplitude / 2.0,
+        }
+    }
+}
+
+impl Phasor for QPSK {
+    fn group_size(&self) -> u32 { 2 }
+
+    fn i(&self, _: usize, b: &[u8]) -> f64 {
+        self.amplitude * (
+            bit_to_sign(b[0]) as f64 * self.phase_cos -
+            bit_to_sign(b[1]) as f64 * self.phase_sin
+        )
+    }
+
+    fn q(&self, _: usize, b: &[u8]) -> f64 {
+        self.amplitude * (
+            bit_to_sign(b[1]) as f64 * self.phase_cos +
+            bit_to_sign(b[0]) as f64 * self.phase_sin
+        )
+    }
+}

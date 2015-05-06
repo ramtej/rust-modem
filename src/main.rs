@@ -24,6 +24,7 @@ fn main() {
             "bfsk" => Box::new(phasor::BFSK::new(
                 freq::Freq::new(400).sample_freq(consts::SAMPLES_PER_SEC),
                 consts::AMPLITUDE)),
+            "qpsk" => Box::new(phasor::QPSK::new(0.0, consts::AMPLITUDE)),
             _ => panic!("invalid modulator"),
         }
     };
