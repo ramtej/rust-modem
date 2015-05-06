@@ -1,10 +1,12 @@
 use std;
 
 pub trait Phasor {
-    fn i(&self, s: u32, b: u8) -> f64;
-    fn q(&self, s: u32, b: u8) -> f64;
+    fn group_size(&self) -> u32;
 
-    fn update(&mut self, _s: u32, _b: u8) {}
+    fn i(&self, s: usize, bits: &[u8]) -> f64;
+    fn q(&self, s: usize, bits: &[u8]) -> f64;
+
+    fn update(&mut self, _s: usize, _b: &[u8]) {}
 }
 
 fn bit_to_sign(b: u8) -> f64 {
@@ -40,12 +42,14 @@ impl BPSK {
 }
 
 impl Phasor for BPSK {
-    fn i(&self, _: u32, b: u8) -> f64 {
-        self.common(b) * self.phase.cos()
+    fn group_size(&self) -> u32 { 1 }
+
+    fn i(&self, _: usize, b: &[u8]) -> f64 {
+        self.common(b[0]) * self.phase.cos()
     }
 
-    fn q(&self, _: u32, b: u8) -> f64 {
-        self.common(b) * self.phase.sin()
+    fn q(&self, _: usize, b: &[u8]) -> f64 {
+        self.common(b[0]) * self.phase.sin()
     }
 }
 
@@ -62,11 +66,13 @@ impl BASK {
 }
 
 impl Phasor for BASK {
-    fn i(&self, _: u32, b: u8) -> f64 {
-        b as f64 * self.amplitude
+    fn group_size(&self) -> u32 { 1 }
+
+    fn i(&self, _: usize, b: &[u8]) -> f64 {
+        b[0] as f64 * self.amplitude
     }
 
-    fn q(&self, _: u32, _: u8) -> f64 {
+    fn q(&self, _: usize, _: &[u8]) -> f64 {
         0.0
     }
 }
@@ -75,6 +81,7 @@ pub struct BFSK {
     deviation: f64,
     amplitude: f64,
     phase: f64,
+    prev: u8,
 }
 
 impl BFSK {
@@ -83,32 +90,41 @@ impl BFSK {
             deviation: d,
             amplitude: a,
             phase: 0.0,
+            prev: 0,
         }
     }
 
-    fn inner(&self, s: u32, b: u8) -> f64 {
+    fn inner(&self, s: usize, b: u8) -> f64 {
         self.rads(s, b) + self.phase
     }
 
-    fn rads(&self, s: u32, b: u8) -> f64 {
+    fn rads(&self, s: usize, b: u8) -> f64 {
         b as f64 * self.deviation * s as f64
     }
 }
 
 impl Phasor for BFSK {
-    fn i(&self, s: u32, b: u8) -> f64 {
-        self.amplitude * self.inner(s, b).cos()
+    fn group_size(&self) -> u32 { 1 }
+
+    fn i(&self, s: usize, b: &[u8]) -> f64 {
+        self.amplitude * self.inner(s, b[0]).cos()
     }
 
-    fn q(&self, s: u32, b: u8) -> f64 {
-        self.amplitude * self.inner(s, b).sin()
+    fn q(&self, s: usize, b: &[u8]) -> f64 {
+        self.amplitude * self.inner(s, b[0]).sin()
     }
 
-    fn update(&mut self, s: u32, b: u8) {
-        self.phase = mod_trig(self.phase + if b == 1 {
+    fn update(&mut self, s: usize, b: &[u8]) {
+        if b[0] == self.prev {
+            return;
+        }
+
+        self.phase = mod_trig(self.phase + if b[0] == 1 {
             -self.rads(s, 1)
         } else {
             self.rads(s - 1, 1)
         });
+
+        self.prev = b[0];
     }
 }

@@ -1,5 +1,5 @@
 pub trait Carrier {
-    fn inner(&self, t: u32) -> f64;
+    fn inner(&self, s: usize) -> f64;
 }
 
 pub struct Basic {
@@ -15,7 +15,7 @@ impl Basic {
 }
 
 impl Carrier for Basic {
-    fn inner(&self, t: u32) -> f64 {
-        self.sample_freq * t as f64
+    fn inner(&self, s: usize) -> f64 {
+        self.sample_freq * s as f64
     }
 }

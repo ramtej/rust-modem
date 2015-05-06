@@ -3,7 +3,7 @@ mod consts;
 mod modem;
 mod util;
 
-use modem::{carrier, phasor, freq, signal};
+use modem::{carrier, phasor, freq, modulator};
 use util::Write16;
 
 fn main() {
@@ -28,13 +28,11 @@ fn main() {
         }
     };
 
-    let mut sig = signal::Signal::new(c, p);
+    let params = modulator::Params::new(consts::BAUD, consts::SAMPLES_PER_SEC);
+    let encoder = modulator::Encoder::new(params, &c, p, &bits::BITS);
 
-    let samples = consts::SAMPLES_PER_BIT * bits::BITS.len() as u32;
-
-    for s in 0..samples {
-        let bit = bits::BITS[s as usize / consts::SAMPLES_PER_BIT as usize];
-        out.write_i16(sig.eval(s, bit) as i16).unwrap();
+    for sample in encoder {
+        out.write_i16(sample as i16).unwrap();
     }
 }
 
