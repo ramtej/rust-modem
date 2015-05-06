@@ -10,7 +10,7 @@ fn main() {
     let mut out = std::io::stdout();
 
     let c = carrier::Basic::new(
-        freq::Freq::new(400).sample_freq(consts::SAMPLES_PER_SEC));
+        freq::Freq::new(800).sample_freq(consts::SAMPLES_PER_SEC));
 
     let p: Box<phasor::Phasor> = {
         let s = match std::env::args().skip(1).next() {
