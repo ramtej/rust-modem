@@ -1,4 +1,4 @@
-use std;
+use modem::util;
 
 pub trait Phasor {
     fn group_size(&self) -> u32;
@@ -15,12 +15,6 @@ fn bit_to_sign(b: u8) -> f64 {
     } else {
         1.0
     }
-}
-
-fn mod_trig(x: f64) -> f64 {
-    const TWO_PI: f64 = std::f64::consts::PI * 2.0;
-
-    x - TWO_PI * (x / TWO_PI).floor()
 }
 
 pub struct BPSK {
@@ -119,7 +113,7 @@ impl Phasor for BFSK {
             return;
         }
 
-        self.phase = mod_trig(self.phase + if b[0] == 1 {
+        self.phase = util::mod_trig(self.phase + if b[0] == 1 {
             -self.rads(s, 1)
         } else {
             self.rads(s - 1, 1)
