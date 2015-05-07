@@ -1,3 +1,5 @@
+use modem::util;
+
 pub trait Carrier {
     fn inner(&self, s: usize) -> f64;
 }
@@ -16,6 +18,6 @@ impl Basic {
 
 impl Carrier for Basic {
     fn inner(&self, s: usize) -> f64 {
-        self.sample_freq * s as f64
+        util::mod_trig(self.sample_freq * s as f64)
     }
 }
