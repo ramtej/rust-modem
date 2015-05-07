@@ -118,3 +118,40 @@ impl<'a, 'b> Iterator for FrequencyModulator<'a, 'b> {
         ).cos())
     }
 }
+
+pub struct AmplitudeModulator<'a> {
+    carrier: &'a carrier::Carrier,
+    sig: &'a mut Iterator<Item = f64>,
+    amplitude: f64,
+    sample: usize,
+}
+
+impl<'a> AmplitudeModulator<'a> {
+    pub fn new(carrier: &'a carrier::Carrier, sig: &'a mut Iterator<Item = f64>,
+           amplitude: f64)
+        -> AmplitudeModulator<'a>
+    {
+        AmplitudeModulator {
+            carrier: carrier,
+            sig: sig,
+            amplitude: amplitude,
+            sample: 0,
+        }
+    }
+}
+
+impl<'a> Iterator for AmplitudeModulator<'a> {
+    type Item = f64;
+
+    fn next(&mut self) -> Option<f64> {
+        let s = match self.sig.next() {
+            None => return None,
+            Some(s) => s,
+        };
+
+        let sample = self.sample;
+        self.sample += 1;
+
+        Some(self.amplitude * s * self.carrier.inner(sample).cos())
+    }
+}

@@ -74,6 +74,13 @@ fn main() {
 
                 output(&mut fm);
             },
+            "am" => {
+                let fc = carrier::Basic::new(freq::Freq::new(600).sample_freq(sr));
+                let mut am = modulator::AmplitudeModulator::new(&fc, &mut encoder,
+                    std::i16::MAX as f64);
+
+                output(&mut am);
+            },
             _ => panic!("invalid analog modulation"),
         },
         None => output(&mut encoder),
