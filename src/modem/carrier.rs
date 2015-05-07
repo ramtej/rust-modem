@@ -21,3 +21,28 @@ impl Carrier for Basic {
         util::mod_trig(self.sample_freq * s as f64)
     }
 }
+
+pub struct CarrierSignal<'a> {
+    carrier: &'a Carrier,
+    sample: usize,
+}
+
+impl<'a> CarrierSignal<'a> {
+    pub fn new(carrier: &'a Carrier) -> CarrierSignal<'a> {
+        CarrierSignal {
+            carrier: carrier,
+            sample: 0,
+        }
+    }
+}
+
+impl<'a> Iterator for CarrierSignal<'a> {
+    type Item = f64;
+
+    fn next(&mut self) -> Option<f64> {
+        let sample = self.sample;
+        self.sample += 1;
+
+        Some(self.carrier.inner(sample).cos())
+    }
+}
