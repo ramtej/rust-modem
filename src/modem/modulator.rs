@@ -1,4 +1,4 @@
-use modem::{phasor, carrier, integrator};
+use super::{phasor, carrier, integrator};
 
 pub struct Encoder<'a> {
     params: Params,

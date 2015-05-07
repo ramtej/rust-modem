@@ -1,4 +1,4 @@
-use modem::util;
+use super::util;
 
 pub trait Phasor {
     fn group_size(&self) -> u32;

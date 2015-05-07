@@ -2,3 +2,7 @@
 name = "modem"
 version = "0.0.1"
 authors = ["Mick Koch <mick@kochm.co>"]
+
+[lib]
+name = "modem"
+path = "src/modem/lib.rs"

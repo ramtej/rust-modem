@@ -1,6 +1,7 @@
+extern crate modem;
+
 mod bits;
 mod consts;
-mod modem;
 mod util;
 
 use modem::{carrier, phasor, freq, modulator, integrator};

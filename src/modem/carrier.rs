@@ -1,4 +1,4 @@
-use modem::util;
+use super::util;
 
 pub trait Carrier {
     fn inner(&self, s: usize) -> f64;
