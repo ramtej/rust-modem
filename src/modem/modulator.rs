@@ -1,4 +1,4 @@
-use modem::{phasor, carrier};
+use modem::{phasor, carrier, integrator};
 
 pub struct Encoder<'a> {
     params: Params,
@@ -74,5 +74,47 @@ impl Params {
             sample_rate: sr,
             samples_per_bit: sr / br,
         }
+    }
+}
+
+pub struct FrequencyModulator<'a, 'b> {
+    carrier: &'b carrier::Carrier,
+    int: &'a mut integrator::Integrator<'a>,
+    amplitude: f64,
+    deviation: f64,
+    sample: usize,
+}
+
+impl<'a, 'b> FrequencyModulator<'a, 'b> {
+    pub fn new(carrier: &'b carrier::Carrier,
+               int: &'a mut integrator::Integrator<'a>,
+               amplitude: f64, deviation: f64)
+        -> FrequencyModulator<'a, 'b>
+    {
+        FrequencyModulator {
+            carrier: carrier,
+            int: int,
+            amplitude: amplitude,
+            deviation: deviation,
+            sample: 0,
+        }
+    }
+}
+
+impl<'a, 'b> Iterator for FrequencyModulator<'a, 'b> {
+    type Item = f64;
+
+    fn next(&mut self) -> Option<f64> {
+        let next = match self.int.next() {
+            None => return None,
+            Some(s) => s,
+        };
+
+        let sample = self.sample;
+        self.sample += 1;
+
+        Some(self.amplitude * (
+            self.carrier.inner(sample) + self.deviation * next
+        ).cos())
     }
 }
