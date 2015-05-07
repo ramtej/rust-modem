@@ -6,3 +6,11 @@ authors = ["Mick Koch <mick@kochm.co>"]
 [lib]
 name = "modem"
 path = "src/modem/lib.rs"
+
+[[bin]]
+name = "modulate"
+path = "src/bin/modulate.rs"
+
+[[bin]]
+name = "fm"
+path = "src/bin/fm.rs"
