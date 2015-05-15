@@ -22,7 +22,7 @@ fn main() {
         freq::Freq::new(300, SAMPLES_PER_SEC));
 
     let fm = modulator::FrequencyModulator::new(&fc, &mut int,
-        AMPLITUDE, freq::Freq::new(10, SAMPLES_PER_SEC));
+        AMPLITUDE, freq::Freq::new(10000, SAMPLES_PER_SEC));
 
     for sample in fm {
         out.write_i16(sample as i16).unwrap();

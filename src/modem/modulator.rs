@@ -79,7 +79,7 @@ impl Params {
 
 pub struct FrequencyModulator<'a, 'b> {
     carrier: &'b carrier::Carrier,
-    int: &'a mut integrator::Integrator<'a>,
+    integ: &'a mut integrator::Integrator<'a>,
     amplitude: f64,
     deviation: f64,
     sample: usize,
@@ -87,13 +87,13 @@ pub struct FrequencyModulator<'a, 'b> {
 
 impl<'a, 'b> FrequencyModulator<'a, 'b> {
     pub fn new(carrier: &'b carrier::Carrier,
-               int: &'a mut integrator::Integrator<'a>,
+               integ: &'a mut integrator::Integrator<'a>,
                amplitude: f64, deviation: freq::Freq)
         -> FrequencyModulator<'a, 'b>
     {
         FrequencyModulator {
             carrier: carrier,
-            int: int,
+            integ: integ,
             amplitude: amplitude,
             deviation: deviation.sample_freq(),
             sample: 0,
@@ -105,7 +105,7 @@ impl<'a, 'b> Iterator for FrequencyModulator<'a, 'b> {
     type Item = f64;
 
     fn next(&mut self) -> Option<f64> {
-        let next = match self.int.next() {
+        let next = match self.integ.next() {
             None => return None,
             Some(s) => s,
         };
