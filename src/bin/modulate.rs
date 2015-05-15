@@ -48,7 +48,7 @@ fn main() {
         None => std::i16::MAX as f64,
     };
 
-    let c = carrier::Basic::new(freq::Freq::new(800).sample_freq(sr));
+    let c = carrier::Carrier::new(freq::Freq::new(800).sample_freq(sr));
 
     let p: Box<phasor::Phasor> = {
         match dmod.as_ref() {
@@ -68,14 +68,14 @@ fn main() {
         Some(s) => match s.as_ref() {
             "fm" => {
                 let mut int = integrator::Integrator::new(&mut encoder);
-                let fc = carrier::Basic::new(freq::Freq::new(600).sample_freq(sr));
+                let fc = carrier::Carrier::new(freq::Freq::new(600).sample_freq(sr));
                 let mut fm = modulator::FrequencyModulator::new(&fc, &mut int,
                     std::i16::MAX as f64, freq::Freq::new(200).sample_freq(sr));
 
                 output(&mut fm);
             },
             "am" => {
-                let fc = carrier::Basic::new(freq::Freq::new(600).sample_freq(sr));
+                let fc = carrier::Carrier::new(freq::Freq::new(600).sample_freq(sr));
                 let mut am = modulator::AmplitudeModulator::new(&fc, &mut encoder,
                     std::i16::MAX as f64);
 
