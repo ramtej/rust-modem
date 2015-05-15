@@ -62,7 +62,9 @@ fn main() {
     };
 
     let params = modulator::Params::new(br, sr);
-    let mut encoder = modulator::Encoder::new(params, &c, p, &bits::BITS);
+    let mut encoder = modulator::Encoder::new(params, &c, p, &bits::BITS).map(|x| {
+        x.re
+    });
 
     match amod {
         Some(s) => match s.as_ref() {

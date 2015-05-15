@@ -5,6 +5,7 @@ authors = ["Mick Koch <mick@kochm.co>"]
 
 [dependencies]
 getopts = "*"
+num = "*"
 
 [lib]
 name = "modem"

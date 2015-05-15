@@ -1,3 +1,5 @@
+extern crate num;
+
 use super::{phasor, carrier, integrator, freq};
 
 pub struct Params {
@@ -52,12 +54,20 @@ impl<'a> Encoder<'a> {
             samples: samples,
         }
     }
+
+    fn real(&self, i: f64, q: f64, cos: f64, sin: f64) -> f64 {
+        i * cos - q * sin
+    }
+
+    fn imag(&self, i: f64, q: f64, cos: f64, sin: f64) -> f64 {
+        i * sin + q * cos
+    }
 }
 
 impl<'a> Iterator for Encoder<'a> {
-    type Item = f64;
+    type Item = num::Complex<f64>;
 
-    fn next(&mut self) -> Option<f64> {
+    fn next(&mut self) -> Option<num::Complex<f64>> {
         if self.sample >= self.samples { return None; }
 
         let idx = self.sample / self.params.samples_per_bit as usize *
@@ -72,8 +82,15 @@ impl<'a> Iterator for Encoder<'a> {
         let s = self.sample;
         self.sample += 1 ;
 
-        Some(self.phasor.i(s, bits) * self.carrier.inner(s).cos() -
-             self.phasor.q(s, bits) * self.carrier.inner(s).sin())
+        let i = self.phasor.i(s, bits);
+        let q = self.phasor.q(s, bits);
+
+        let phase = self.carrier.inner(s);
+        let cos = phase.cos();
+        let sin = phase.sin();
+
+        Some(num::Complex::new(self.real(i, q, cos, sin),
+                               self.imag(i, q, cos, sin)))
     }
 }
 
