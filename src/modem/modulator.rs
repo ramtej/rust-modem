@@ -1,5 +1,24 @@
 use super::{phasor, carrier, integrator, freq};
 
+pub struct Params {
+    // Symbols per second.
+    pub baud_rate: u32,
+    // Samples per second.
+    pub sample_rate: u32,
+    // Samples per bit.
+    pub samples_per_bit: u32,
+}
+
+impl Params {
+    pub fn new(br: u32, sr: u32) -> Params {
+        Params {
+            baud_rate: br,
+            sample_rate: sr,
+            samples_per_bit: sr / br,
+        }
+    }
+}
+
 pub struct Encoder<'a> {
     params: Params,
 
@@ -55,25 +74,6 @@ impl<'a> Iterator for Encoder<'a> {
 
         Some(self.phasor.i(s, bits) * self.carrier.inner(s).cos() -
              self.phasor.q(s, bits) * self.carrier.inner(s).sin())
-    }
-}
-
-pub struct Params {
-    // Symbols per second.
-    pub baud_rate: u32,
-    // Samples per second.
-    pub sample_rate: u32,
-    // Samples per bit.
-    pub samples_per_bit: u32,
-}
-
-impl Params {
-    pub fn new(br: u32, sr: u32) -> Params {
-        Params {
-            baud_rate: br,
-            sample_rate: sr,
-            samples_per_bit: sr / br,
-        }
     }
 }
 
