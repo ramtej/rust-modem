@@ -1,4 +1,4 @@
-use super::{phasor, carrier, integrator};
+use super::{phasor, carrier, integrator, freq};
 
 pub struct Encoder<'a> {
     params: Params,
@@ -88,14 +88,14 @@ pub struct FrequencyModulator<'a, 'b> {
 impl<'a, 'b> FrequencyModulator<'a, 'b> {
     pub fn new(carrier: &'b carrier::Carrier,
                int: &'a mut integrator::Integrator<'a>,
-               amplitude: f64, deviation: f64)
+               amplitude: f64, deviation: freq::Freq)
         -> FrequencyModulator<'a, 'b>
     {
         FrequencyModulator {
             carrier: carrier,
             int: int,
             amplitude: amplitude,
-            deviation: deviation,
+            deviation: deviation.sample_freq(),
             sample: 0,
         }
     }

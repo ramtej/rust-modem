@@ -48,14 +48,14 @@ fn main() {
         None => std::i16::MAX as f64,
     };
 
-    let c = carrier::Carrier::new(freq::Freq::new(800).sample_freq(sr));
+    let c = carrier::Carrier::new(freq::Freq::new(800, sr));
 
     let p: Box<phasor::Phasor> = {
         match dmod.as_ref() {
             "bask" => Box::new(phasor::BASK::new(amplitude)),
             "bpsk" => Box::new(phasor::BPSK::new(0.0, amplitude)),
-            "bfsk" => Box::new(phasor::BFSK::new(
-                freq::Freq::new(200).sample_freq(sr), amplitude)),
+            "bfsk" => Box::new(phasor::BFSK::new(freq::Freq::new(200, sr),
+                               amplitude)),
             "qpsk" => Box::new(phasor::QPSK::new(0.0, amplitude)),
             _ => panic!("invalid digital modulation"),
         }
@@ -68,14 +68,14 @@ fn main() {
         Some(s) => match s.as_ref() {
             "fm" => {
                 let mut int = integrator::Integrator::new(&mut encoder);
-                let fc = carrier::Carrier::new(freq::Freq::new(600).sample_freq(sr));
+                let fc = carrier::Carrier::new(freq::Freq::new(600, sr));
                 let mut fm = modulator::FrequencyModulator::new(&fc, &mut int,
-                    std::i16::MAX as f64, freq::Freq::new(200).sample_freq(sr));
+                    std::i16::MAX as f64, freq::Freq::new(200, sr));
 
                 output(&mut fm);
             },
             "am" => {
-                let fc = carrier::Carrier::new(freq::Freq::new(600).sample_freq(sr));
+                let fc = carrier::Carrier::new(freq::Freq::new(600, sr));
                 let mut am = modulator::AmplitudeModulator::new(&fc, &mut encoder,
                     std::i16::MAX as f64);
 

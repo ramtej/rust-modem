@@ -1,13 +1,13 @@
-use super::util;
+use super::{util, freq};
 
 pub struct Carrier {
     sample_freq: f64,
 }
 
 impl Carrier {
-    pub fn new(freq: f64) -> Carrier {
+    pub fn new(freq: freq::Freq) -> Carrier {
         Carrier {
-            sample_freq: freq,
+            sample_freq: freq.sample_freq(),
         }
     }
 

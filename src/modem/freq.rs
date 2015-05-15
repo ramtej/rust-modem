@@ -3,12 +3,14 @@ use std;
 pub struct Freq {
     // Cycles per second.
     hz: u32,
+    sr: u32,
 }
 
 impl Freq {
-    pub fn new(hz: u32) -> Freq {
+    pub fn new(hz: u32, sr: u32) -> Freq {
         Freq {
             hz: hz,
+            sr: sr,
         }
     }
 
@@ -18,7 +20,7 @@ impl Freq {
     }
 
     // Get radians per sample given the samples per second.
-    pub fn sample_freq(&self, sr: u32) -> f64 {
-        self.ang_freq() / sr as f64
+    pub fn sample_freq(&self) -> f64 {
+        self.ang_freq() / self.sr as f64
     }
 }

@@ -25,6 +25,7 @@ impl<'a> Iterator for Integrator<'a> {
             Some(s) => s,
         };
 
+        // Round to 5 decimal places.
         let next = (next * 10000.0).trunc() / 10000.0;
         assert!(next >= -1.0 && next <= 1.0);
 

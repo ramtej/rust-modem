@@ -1,4 +1,4 @@
-use super::util;
+use super::{util, freq};
 
 pub trait Phasor {
     fn group_size(&self) -> u32;
@@ -79,9 +79,9 @@ pub struct BFSK {
 }
 
 impl BFSK {
-    pub fn new(d: f64, a: f64) -> BFSK {
+    pub fn new(d: freq::Freq, a: f64) -> BFSK {
         BFSK {
-            deviation: d,
+            deviation: d.sample_freq(),
             amplitude: a,
             phase: 0.0,
             prev: 0,
