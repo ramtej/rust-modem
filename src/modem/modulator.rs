@@ -145,7 +145,7 @@ pub struct AmplitudeModulator<'a> {
 
 impl<'a> AmplitudeModulator<'a> {
     pub fn new(carrier: &'a carrier::Carrier, sig: &'a mut Iterator<Item = f64>,
-           amplitude: f64)
+               amplitude: f64)
         -> AmplitudeModulator<'a>
     {
         AmplitudeModulator {
