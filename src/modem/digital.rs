@@ -160,3 +160,48 @@ impl DigitalPhasor for QPSK {
         )
     }
 }
+
+pub struct QAM16 {
+    phase_cos: f64,
+    phase_sin: f64,
+    amplitude: f64,
+}
+
+impl QAM16 {
+    pub fn new(phase: f64, amplitude: f64) -> QAM16 {
+        QAM16 {
+            phase_cos: phase.cos(),
+            phase_sin: phase.sin(),
+            amplitude: amplitude / 15.0 / 2.0,
+        }
+    }
+
+    fn bytes_to_bits(b: &[u8]) -> u8 {
+        (b[3] & 1) << 0 |
+        (b[2] & 1) << 1 |
+        (b[1] & 1) << 2 |
+        (b[0] & 1) << 3
+    }
+
+    fn symbol(b: &[u8]) -> i32 {
+        2 * QAM16::bytes_to_bits(b) as i32 - 15
+    }
+}
+
+impl DigitalPhasor for QAM16 {
+    fn group_size(&self) -> u32 { 8 }
+
+    fn i(&self, _: usize, b: &[u8]) -> f64 {
+        self.amplitude * (
+            QAM16::symbol(b) as f64 * self.phase_cos -
+            QAM16::symbol(&b[4..]) as f64 * self.phase_sin
+        )
+    }
+
+    fn q(&self, _: usize, b: &[u8]) -> f64 {
+        self.amplitude * (
+            QAM16::symbol(&b[4..]) as f64 * self.phase_cos +
+            QAM16::symbol(b) as f64 * self.phase_sin
+        )
+    }
+}

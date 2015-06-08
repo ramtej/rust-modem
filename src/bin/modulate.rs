@@ -58,6 +58,7 @@ fn main() {
             "bfsk" => Box::new(digital::BFSK::new(freq::Freq::new(200, sr),
                                amplitude)),
             "qpsk" => Box::new(digital::QPSK::new(0.0, amplitude)),
+            "qam16" => Box::new(digital::QAM16::new(0.0, amplitude)),
             _ => panic!("invalid digital modulation"),
         }
     };
