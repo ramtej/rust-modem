@@ -14,11 +14,7 @@ pub trait DigitalPhasor {
 }
 
 fn bit_to_sign(b: u8) -> f64 {
-    if b == 0 {
-        -1.0
-    } else {
-        1.0
-    }
+    (2 * b as i8 - 1) as f64
 }
 
 pub struct BPSK {
