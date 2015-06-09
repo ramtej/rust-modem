@@ -1,5 +1,6 @@
 use std;
 
+#[derive(Copy, Clone)]
 pub struct Freq {
     // Cycles per second.
     hz: u32,
