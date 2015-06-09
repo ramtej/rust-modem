@@ -43,10 +43,7 @@ fn main() {
         None => 220,
     };
 
-    let amplitude = match amod {
-        Some(_) => 1.0,
-        None => std::i16::MAX as f64,
-    };
+    let amplitude = std::i16::MAX as f64;
 
     let params = modulator::Params::new(br, sr);
     let c = carrier::Carrier::new(freq::Freq::new(800, sr));
@@ -70,7 +67,7 @@ fn main() {
     let mut modul: Box<Iterator<Item = f64>> = if let Some(s) = amod {
         let aphasor: Box<phasor::Phasor> = match s.as_ref() {
             "fm" => {
-                let int = integrator::Integrator::new(dmodul);
+                let int = integrator::Integrator::new(dmodul, amplitude);
 
                 Box::new(phasor::FM::new(int, std::i16::MAX as f64,
                                          freq::Freq::new(1000, sr)))

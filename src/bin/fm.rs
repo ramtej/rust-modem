@@ -18,7 +18,7 @@ fn main() {
 
     let p = Box::new(phasor::Raw::new(1.0));
     let modul = modulator::Modulator::new(c, p).map(|x| x.re);
-    let int = integrator::Integrator::new(modul);
+    let int = integrator::Integrator::new(modul, 1.0);
     let fm = Box::new(phasor::FM::new(int, AMPLITUDE,
         freq::Freq::new(800, SAMPLES_PER_SEC)));
 
