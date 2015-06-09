@@ -2,11 +2,11 @@ extern crate modem;
 
 mod util;
 
-use modem::{carrier, freq, modulator, integrator};
+use modem::{carrier, freq, modulator, integrator, phasor};
 use util::Write16;
 
 // Samples per second.
-const SAMPLES_PER_SEC: u32 = 44000;
+const SAMPLES_PER_SEC: u32 = 10000;
 // Amplitude for the signal.
 const AMPLITUDE: f64 = std::i16::MAX as f64;
 
@@ -15,16 +15,17 @@ fn main() {
 
     let c = carrier::Carrier::new(
         freq::Freq::new(10, SAMPLES_PER_SEC));
-    let mut s = carrier::CarrierSignal::new(&c);
-    let mut int = integrator::Integrator::new(&mut s);
 
-    let fc = carrier::Carrier::new(
-        freq::Freq::new(300, SAMPLES_PER_SEC));
+    let p = Box::new(phasor::Raw::new(1.0));
+    let modul = modulator::Modulator::new(c, p).map(|x| x.re);
+    let int = integrator::Integrator::new(modul);
+    let fm = Box::new(phasor::FM::new(int, AMPLITUDE,
+        freq::Freq::new(800, SAMPLES_PER_SEC)));
 
-    let fm = modulator::FrequencyModulator::new(&fc, &mut int,
-        AMPLITUDE, freq::Freq::new(10000, SAMPLES_PER_SEC));
+    let fc = carrier::Carrier::new(freq::Freq::new(800, SAMPLES_PER_SEC));
+    let fmodul = modulator::Modulator::new(fc, fm);
 
-    for sample in fm {
-        out.write_i16(sample as i16).unwrap();
+    for sample in fmodul {
+        out.write_i16(sample.re as i16).unwrap();
     }
 }

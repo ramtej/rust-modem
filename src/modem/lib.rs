@@ -1,4 +1,5 @@
 pub mod carrier;
+pub mod digital;
 pub mod freq;
 pub mod integrator;
 pub mod modulator;

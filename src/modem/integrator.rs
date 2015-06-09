@@ -1,11 +1,13 @@
-pub struct Integrator<'a> {
-    sig: &'a mut Iterator<Item = f64>,
+pub struct Integrator<T: Iterator<Item = f64>> {
+    sig: T,
     prev: f64,
     accum: f64,
 }
 
-impl<'a> Integrator<'a> {
-    pub fn new(sig: &'a mut Iterator<Item = f64>) -> Integrator<'a> {
+impl<T: Iterator<Item = f64>> Integrator<T> {
+    pub fn new(sig: T) -> Integrator<T> {
+        // Why?
+        let mut sig = sig;
         let x = sig.next().unwrap().acos();
 
         Integrator {
@@ -16,7 +18,7 @@ impl<'a> Integrator<'a> {
     }
 }
 
-impl<'a> Iterator for Integrator<'a> {
+impl<T: Iterator<Item = f64>> Iterator for Integrator<T> {
     type Item = f64;
 
     fn next(&mut self) -> Option<f64> {

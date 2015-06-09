@@ -4,7 +4,7 @@ extern crate getopts;
 mod bits;
 mod util;
 
-use modem::{carrier, phasor, freq, modulator, integrator};
+use modem::{carrier, phasor, freq, modulator, integrator, digital};
 use util::Write16;
 use getopts::Options;
 
@@ -48,45 +48,45 @@ fn main() {
         None => std::i16::MAX as f64,
     };
 
+    let params = modulator::Params::new(br, sr);
     let c = carrier::Carrier::new(freq::Freq::new(800, sr));
 
-    let p: Box<phasor::Phasor> = {
+    let p: Box<digital::DigitalPhasor> = {
         match dmod.as_ref() {
-            "bask" => Box::new(phasor::BASK::new(amplitude)),
-            "bpsk" => Box::new(phasor::BPSK::new(0.0, amplitude)),
-            "bfsk" => Box::new(phasor::BFSK::new(freq::Freq::new(200, sr),
+            "bask" => Box::new(digital::BASK::new(amplitude)),
+            "bpsk" => Box::new(digital::BPSK::new(0.0, amplitude)),
+            "bfsk" => Box::new(digital::BFSK::new(freq::Freq::new(200, sr),
                                amplitude)),
-            "qpsk" => Box::new(phasor::QPSK::new(0.0, amplitude)),
+            "qpsk" => Box::new(digital::QPSK::new(0.0, amplitude)),
             _ => panic!("invalid digital modulation"),
         }
     };
 
-    let params = modulator::Params::new(br, sr);
-    let mut encoder = modulator::Encoder::new(params, &c, p, &bits::BITS).map(|x| {
-        x.re
-    });
+    let dmodul = Box::new(
+        modulator::DigitalModulator::new(params, c, p, bits::BITS).map(|x| x.re)
+    );
 
-    match amod {
-        Some(s) => match s.as_ref() {
+    let mut modul: Box<Iterator<Item = f64>> = if let Some(s) = amod {
+        let aphasor: Box<phasor::Phasor> = match s.as_ref() {
             "fm" => {
-                let mut int = integrator::Integrator::new(&mut encoder);
-                let fc = carrier::Carrier::new(freq::Freq::new(600, sr));
-                let mut fm = modulator::FrequencyModulator::new(&fc, &mut int,
-                    std::i16::MAX as f64, freq::Freq::new(200, sr));
+                let int = integrator::Integrator::new(dmodul);
 
-                output(&mut fm);
+                Box::new(phasor::FM::new(int, std::i16::MAX as f64,
+                                         freq::Freq::new(1000, sr)))
             },
             "am" => {
-                let fc = carrier::Carrier::new(freq::Freq::new(600, sr));
-                let mut am = modulator::AmplitudeModulator::new(&fc, &mut encoder,
-                    std::i16::MAX as f64);
-
-                output(&mut am);
+                Box::new(phasor::AM::new(dmodul, std::i16::MAX as f64))
             },
             _ => panic!("invalid analog modulation"),
-        },
-        None => output(&mut encoder),
-    }
+        };
+
+        let fc = carrier::Carrier::new(freq::Freq::new(1000, sr));
+        Box::new(modulator::Modulator::new(fc, aphasor).map(|x| x.re))
+    } else {
+        dmodul
+    };
+
+    output(&mut modul);
 }
 
 fn output(iter: &mut Iterator<Item = f64>) {
