@@ -2,6 +2,7 @@ extern crate num;
 
 use super::{phasor, carrier, integrator, freq};
 
+#[derive(Copy, Clone)]
 pub struct Params {
     // Symbols per second.
     pub baud_rate: u32,
