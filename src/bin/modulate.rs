@@ -35,7 +35,7 @@ fn main() {
 
     let sr: u32 = match opts.opt_str("r") {
         Some(s) => s.parse().unwrap(),
-        None => 44000,
+        None => 10000,
     };
 
     let br: u32 = match opts.opt_str("b") {
