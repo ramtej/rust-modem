@@ -1,4 +1,5 @@
 use super::{util, freq};
+use std;
 
 pub trait DigitalPhasor {
     fn group_size(&self) -> u32;
@@ -199,5 +200,55 @@ impl DigitalPhasor for QAM16 {
             QAM16::symbol(&b[4..]) as f64 * self.phase_cos +
             QAM16::symbol(b) as f64 * self.phase_sin
         )
+    }
+}
+
+pub struct MSK {
+    amplitude: f64,
+    samples_per_bit: f64,
+    bit: usize,
+    bits: [u8; 2],
+}
+
+impl MSK {
+    pub fn new(amplitude: f64, samples_per_bit: u32) -> MSK {
+        MSK {
+            amplitude: amplitude,
+            samples_per_bit: samples_per_bit as f64,
+            bit: 1,
+            bits: [0, 0],
+        }
+    }
+
+    fn b(&self) -> f64 {
+        if self.bits[0] == self.bits[1] { 1.0 } else { -1.0 }
+    }
+
+    fn phi(&self) -> f64 {
+        if self.bits[0] == 1 { 0.0 } else { std::f64::consts::PI }
+    }
+
+    fn inner(&self, s: usize) -> f64 {
+        self.b() * std::f64::consts::FRAC_PI_2 * s as f64 /
+            self.samples_per_bit + self.phi()
+    }
+}
+
+impl DigitalPhasor for MSK {
+    fn group_size(&self) -> u32 { 1 }
+
+    fn i(&self, s: usize, _: &[u8]) -> f64 {
+        self.amplitude * self.inner(s).cos()
+    }
+
+    fn q(&self, s: usize, _: &[u8]) -> f64 {
+        self.amplitude * self.inner(s).sin()
+    }
+
+    fn update(&mut self, _: usize, b: &[u8]) {
+        self.bits[self.bit] = b[0];
+
+        self.bit += 1;
+        self.bit %= 2;
     }
 }
