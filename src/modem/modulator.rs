@@ -1,6 +1,7 @@
 extern crate num;
 
 use super::{phasor, digital, carrier};
+use std;
 
 #[derive(Copy, Clone)]
 pub struct Params {
@@ -93,7 +94,7 @@ impl<'a> DigitalModulator<'a> {
             phasor: psr,
             bits: b,
             samples: samples,
-            prev_idx: 0,
+            prev_idx: std::usize::MAX,
             sample: 0,
         }
     }
@@ -109,7 +110,7 @@ impl<'a> Iterator for DigitalModulator<'a> {
 
         let idx = self.sample / self.params.samples_per_bit as usize *
             self.phasor.group_size() as usize;
-        let bits = &self.bits[idx..];
+        let bits = &self.bits[idx..idx + self.phasor.group_size() as usize];
 
         if idx != self.prev_idx {
             self.phasor.update(self.sample, bits);
