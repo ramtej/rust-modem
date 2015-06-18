@@ -254,6 +254,85 @@ impl DigitalPhasor for MSK {
     }
 }
 
+pub trait SymbolMap {
+    fn coef(&self, symbol: u8) -> f64;
+}
+
+pub struct DefaultMap {
+    max_symbol: u32,
+}
+
+impl DefaultMap {
+    pub fn new(group_size: u32) -> DefaultMap {
+        DefaultMap {
+            max_symbol: (1 << group_size) - 1,
+        }
+    }
+}
+
+impl SymbolMap for DefaultMap {
+    fn coef(&self, symbol: u8) -> f64 {
+        (2 * symbol as i32 - self.max_symbol as i32) as f64
+    }
+}
+
+pub struct IncreaseMap;
+
+impl SymbolMap for IncreaseMap {
+    fn coef(&self, symbol: u8) -> f64 {
+        (2 * symbol) as f64
+    }
+}
+
+pub struct MFSK<M: SymbolMap> {
+    group_size: u32,
+    deviation: f64,
+    amplitude: f64,
+    map: M,
+    phase_offset: f64,
+    cur_coef: f64,
+}
+
+impl<M: SymbolMap> MFSK<M> {
+    pub fn new(group_size: u32, deviation: freq::Freq, amplitude: f64, map: M)
+        -> MFSK<M>
+    {
+        MFSK {
+            group_size: group_size,
+            deviation: deviation.sample_freq(),
+            amplitude: amplitude,
+            map: map,
+            phase_offset: 0.0,
+            cur_coef: 0.0,
+        }
+    }
+
+    fn inner(&self, s: usize) -> f64 {
+        self.cur_coef * self.deviation * s as f64 + self.phase_offset
+    }
+}
+
+impl<M: SymbolMap> DigitalPhasor for MFSK<M> {
+    fn group_size(&self) -> u32 { self.group_size }
+
+    fn update(&mut self, s: usize, b: &[u8]) {
+        let next_coef = self.map.coef(bytes_to_bits(b));
+
+        self.phase_offset += (self.cur_coef - next_coef) * self.deviation * s as f64;
+        self.phase_offset = util::mod_trig(self.phase_offset);
+
+        self.cur_coef = next_coef;
+    }
+
+    fn i(&self, s: usize, _: &[u8]) -> f64 {
+        self.amplitude * self.inner(s).cos()
+    }
+
+    fn q(&self, s: usize, _: &[u8]) -> f64 {
+        self.amplitude * self.inner(s).sin()
+    }
+}
+
 #[cfg(test)]
 mod test {
     #[test]

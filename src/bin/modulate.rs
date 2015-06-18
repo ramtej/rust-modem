@@ -58,6 +58,8 @@ fn main() {
             "qam16" => Box::new(digital::QAM16::new(0.0, amplitude)),
             "msk" => Box::new(digital::MSK::new(amplitude,
                                                 params.samples_per_bit)),
+            "mfsk" => Box::new(digital::MFSK::new(4, freq::Freq::new(50, sr),
+                amplitude, digital::IncreaseMap)),
             _ => panic!("invalid digital modulation"),
         }
     };
