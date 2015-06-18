@@ -18,6 +18,14 @@ fn bit_to_sign(b: u8) -> f64 {
     (2 * b as i8 - 1) as f64
 }
 
+fn bytes_to_bits(bytes: &[u8]) -> u8 {
+    let len = bytes.len() - 1;
+
+    bytes.iter().enumerate().fold(0, |s, (i, &b)| {
+        s | (b & 1) << (len - i)
+    })
+}
+
 pub struct BPSK {
     phase: f64,
     amplitude: f64,
@@ -173,15 +181,8 @@ impl QAM16 {
         }
     }
 
-    fn bytes_to_bits(b: &[u8]) -> u8 {
-        (b[3] & 1) << 0 |
-        (b[2] & 1) << 1 |
-        (b[1] & 1) << 2 |
-        (b[0] & 1) << 3
-    }
-
     fn symbol(b: &[u8]) -> i32 {
-        2 * QAM16::bytes_to_bits(b) as i32 - 15
+        2 * bytes_to_bits(b) as i32 - 15
     }
 }
 
@@ -190,7 +191,7 @@ impl DigitalPhasor for QAM16 {
 
     fn i(&self, _: usize, b: &[u8]) -> f64 {
         self.amplitude * (
-            QAM16::symbol(b) as f64 * self.phase_cos -
+            QAM16::symbol(&b[..4]) as f64 * self.phase_cos -
             QAM16::symbol(&b[4..]) as f64 * self.phase_sin
         )
     }
@@ -198,7 +199,7 @@ impl DigitalPhasor for QAM16 {
     fn q(&self, _: usize, b: &[u8]) -> f64 {
         self.amplitude * (
             QAM16::symbol(&b[4..]) as f64 * self.phase_cos +
-            QAM16::symbol(b) as f64 * self.phase_sin
+            QAM16::symbol(&b[..4]) as f64 * self.phase_sin
         )
     }
 }
@@ -250,5 +251,14 @@ impl DigitalPhasor for MSK {
 
         self.bit += 1;
         self.bit %= 2;
+    }
+}
+
+#[cfg(test)]
+mod test {
+    #[test]
+    fn test_b2b() {
+        assert_eq!(super::bytes_to_bits(&[0, 0, 0, 1]), 0b0001);
+        assert_eq!(super::bytes_to_bits(&[0, 1, 0, 1]), 0b0101);
     }
 }
