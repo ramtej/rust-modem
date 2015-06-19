@@ -143,7 +143,7 @@ impl QPSK {
         QPSK {
             phase_cos: phase.cos(),
             phase_sin: phase.sin(),
-            amplitude: amplitude / 2.0,
+            amplitude: amplitude * 0.5f64.sqrt(),
         }
     }
 }
