@@ -46,7 +46,7 @@ fn main() {
     let amplitude = std::i16::MAX as f64;
 
     let params = modulator::Params::new(br, sr);
-    let c = carrier::Carrier::new(freq::Freq::new(800, sr));
+    let c = carrier::Carrier::new(freq::Freq::new(900, sr));
 
     let p: Box<digital::DigitalPhasor> = {
         match dmod.as_ref() {
