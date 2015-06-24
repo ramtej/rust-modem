@@ -64,11 +64,12 @@ fn main() {
         }
     };
 
-    let dmodul = Box::new(
-        modulator::DigitalModulator::new(params, c, p, bits::BITS).map(|x| x.re)
+    let mut dmodul = Box::new(
+        modulator::DigitalModulator::new(params, c, p, bits::BITS)
+            .map(|x| x.re)
     );
 
-    let mut modul: Box<Iterator<Item = f64>> = if let Some(s) = amod {
+    if let Some(s) = amod {
         let aphasor: Box<phasor::Phasor> = match s.as_ref() {
             "fm" => {
                 let int = integrator::Integrator::new(dmodul, amplitude);
@@ -83,12 +84,12 @@ fn main() {
         };
 
         let fc = carrier::Carrier::new(freq::Freq::new(1000, sr));
-        Box::new(modulator::Modulator::new(fc, aphasor).map(|x| x.re))
-    } else {
-        dmodul
-    };
+        let mut modul = modulator::Modulator::new(fc, aphasor).map(|x| x.re);
 
-    output(&mut modul);
+        output(&mut modul);
+    } else {
+        output(&mut dmodul);
+    };
 }
 
 fn output(iter: &mut Iterator<Item = f64>) {
