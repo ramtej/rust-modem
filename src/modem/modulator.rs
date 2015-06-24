@@ -36,7 +36,7 @@ pub struct Modulator {
     phasor: Box<phasor::Phasor>,
 }
 
-impl<'a> Modulator {
+impl Modulator {
     pub fn new(c: carrier::Carrier, psr: Box<phasor::Phasor>) -> Modulator {
         Modulator {
             carrier: c,
