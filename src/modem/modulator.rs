@@ -34,7 +34,6 @@ fn imag(i: f64, q: f64, cos: f64, sin: f64) -> f64 {
 pub struct Modulator {
     carrier: carrier::Carrier,
     phasor: Box<phasor::Phasor>,
-    sample: usize,
 }
 
 impl<'a> Modulator {
@@ -42,7 +41,6 @@ impl<'a> Modulator {
         Modulator {
             carrier: c,
             phasor: psr,
-            sample: 0,
         }
     }
 }
@@ -51,15 +49,13 @@ impl Iterator for Modulator {
     type Item = num::Complex<f64>;
 
     fn next(&mut self) -> Option<Self::Item> {
-        let s = self.sample;
-        self.sample += 1 ;
+        let phase = self.carrier.next();
 
-        let (i, q) = match self.phasor.next(s) {
+        let (i, q) = match self.phasor.next(self.carrier.sample) {
             Some((i, q)) => (i, q),
             None => return None,
         };
 
-        let phase = self.carrier.inner(s);
         let cos = phase.cos();
         let sin = phase.sin();
 
@@ -77,7 +73,6 @@ pub struct DigitalModulator<'a> {
     samples: usize,
 
     prev_idx: usize,
-    sample: usize,
 }
 
 impl<'a> DigitalModulator<'a> {
@@ -95,7 +90,6 @@ impl<'a> DigitalModulator<'a> {
             bits: b,
             samples: samples,
             prev_idx: std::usize::MAX,
-            sample: 0,
         }
     }
 }
@@ -104,28 +98,26 @@ impl<'a> Iterator for DigitalModulator<'a> {
     type Item = num::Complex<f64>;
 
     fn next(&mut self) -> Option<Self::Item> {
-        if self.sample >= self.samples {
+        let phase = self.carrier.next();
+
+        if self.carrier.sample >= self.samples {
             return None;
         }
 
-        let idx = self.sample / self.params.samples_per_bit as usize *
+        let idx = self.carrier.sample / self.params.samples_per_bit as usize *
             self.phasor.group_size() as usize;
         let bits = &self.bits[idx..idx + self.phasor.group_size() as usize];
 
         if idx != self.prev_idx {
-            self.phasor.update(self.sample, bits);
+            self.phasor.update(self.carrier.sample, bits);
             self.prev_idx = idx;
         }
 
-        let s = self.sample;
-        self.sample += 1 ;
-
-        let (i, q) = match self.phasor.next(s, bits) {
+        let (i, q) = match self.phasor.next(self.carrier.sample, bits) {
             Some((i, q)) => (i, q),
             None => return None,
         };
 
-        let phase = self.carrier.inner(s);
         let cos = phase.cos();
         let sin = phase.sin();
 
