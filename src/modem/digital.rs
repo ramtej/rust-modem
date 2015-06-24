@@ -177,29 +177,29 @@ impl QAM16 {
         QAM16 {
             phase_cos: phase.cos(),
             phase_sin: phase.sin(),
-            amplitude: amplitude / 15.0 / 2.0,
+            amplitude: amplitude / 3.0 / 2.0,
         }
     }
 
     fn symbol(b: &[u8]) -> i32 {
-        2 * bytes_to_bits(b) as i32 - 15
+        2 * bytes_to_bits(b) as i32 - 3
     }
 }
 
 impl DigitalPhasor for QAM16 {
-    fn group_size(&self) -> u32 { 8 }
+    fn group_size(&self) -> u32 { 4 }
 
     fn i(&self, _: usize, b: &[u8]) -> f64 {
         self.amplitude * (
-            QAM16::symbol(&b[..4]) as f64 * self.phase_cos -
-            QAM16::symbol(&b[4..]) as f64 * self.phase_sin
+            QAM16::symbol(&b[..2]) as f64 * self.phase_cos -
+            QAM16::symbol(&b[2..]) as f64 * self.phase_sin
         )
     }
 
     fn q(&self, _: usize, b: &[u8]) -> f64 {
         self.amplitude * (
-            QAM16::symbol(&b[4..]) as f64 * self.phase_cos +
-            QAM16::symbol(&b[..4]) as f64 * self.phase_sin
+            QAM16::symbol(&b[2..]) as f64 * self.phase_cos +
+            QAM16::symbol(&b[..2]) as f64 * self.phase_sin
         )
     }
 }
