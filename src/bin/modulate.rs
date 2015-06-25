@@ -55,7 +55,7 @@ fn main() {
             "bfsk" => Box::new(digital::BFSK::new(freq::Freq::new(200, sr),
                                amplitude)),
             "qpsk" => Box::new(digital::QPSK::new(0.0, amplitude)),
-            "qam16" => Box::new(digital::QAM16::new(0.0, amplitude)),
+            "qam16" => Box::new(digital::QAM::new(4, 0.0, amplitude)),
             "msk" => Box::new(digital::MSK::new(amplitude,
                                                 params.samples_per_bit)),
             "mfsk" => Box::new(digital::MFSK::new(4, freq::Freq::new(50, sr),

@@ -26,6 +26,10 @@ fn bytes_to_bits(bytes: &[u8]) -> u8 {
     })
 }
 
+fn max_symbol(group_size: u32) -> u32 {
+    (1 << group_size) - 1
+}
+
 pub struct BPSK {
     phase: f64,
     amplitude: f64,
@@ -166,40 +170,61 @@ impl DigitalPhasor for QPSK {
     }
 }
 
-pub struct QAM16 {
+pub struct QAM {
+    group_size: u32,
+    // Number of bits per carrier.
+    carrier_size: u32,
+    max_symbol: f64,
     phase_cos: f64,
     phase_sin: f64,
     amplitude: f64,
 }
 
-impl QAM16 {
-    pub fn new(phase: f64, amplitude: f64) -> QAM16 {
-        QAM16 {
+impl QAM {
+    pub fn new(group_size: u32, phase: f64, amplitude: f64) -> QAM {
+        // Must have a bit for i and a bit for q.
+        assert!(group_size > 1);
+
+        let cs = group_size / 2;
+        let ms = max_symbol(cs) as f64;
+
+        QAM {
+            group_size: group_size,
+            carrier_size: cs,
+            max_symbol: ms,
             phase_cos: phase.cos(),
             phase_sin: phase.sin(),
-            amplitude: amplitude / 3.0 / 2.0,
+            amplitude: amplitude / ms / 2.0,
         }
     }
 
-    fn symbol(b: &[u8]) -> i32 {
-        2 * bytes_to_bits(b) as i32 - 3
+    fn pos_symbol(&self, s: u8) -> f64 {
+        2.0 * s as f64 - self.max_symbol
+    }
+
+    fn pos_bytes(&self, b: &[u8]) -> f64 {
+        self.pos_symbol(bytes_to_bits(b))
     }
 }
 
-impl DigitalPhasor for QAM16 {
-    fn group_size(&self) -> u32 { 4 }
+impl DigitalPhasor for QAM {
+    fn group_size(&self) -> u32 { self.group_size }
 
     fn i(&self, _: usize, b: &[u8]) -> f64 {
+        let (msb, lsb) = b.split_at(self.carrier_size as usize);
+
         self.amplitude * (
-            QAM16::symbol(&b[..2]) as f64 * self.phase_cos -
-            QAM16::symbol(&b[2..]) as f64 * self.phase_sin
+            self.pos_bytes(msb) * self.phase_cos -
+            self.pos_bytes(lsb) * self.phase_sin
         )
     }
 
     fn q(&self, _: usize, b: &[u8]) -> f64 {
+        let (msb, lsb) = b.split_at(self.carrier_size as usize);
+
         self.amplitude * (
-            QAM16::symbol(&b[2..]) as f64 * self.phase_cos +
-            QAM16::symbol(&b[..2]) as f64 * self.phase_sin
+            self.pos_bytes(lsb) * self.phase_cos +
+            self.pos_bytes(msb) * self.phase_sin
         )
     }
 }
@@ -339,5 +364,33 @@ mod test {
     fn test_b2b() {
         assert_eq!(super::bytes_to_bits(&[0, 0, 0, 1]), 0b0001);
         assert_eq!(super::bytes_to_bits(&[0, 1, 0, 1]), 0b0101);
+    }
+
+    #[test]
+    fn test_max_symbol() {
+        use super::max_symbol;
+        assert_eq!(max_symbol(1), 0b1);
+        assert_eq!(max_symbol(2), 0b11);
+        assert_eq!(max_symbol(4), 0b1111);
+        assert_eq!(max_symbol(8), 0b11111111);
+    }
+
+    #[test]
+    fn test_qam() {
+        use super::{QAM, DigitalPhasor};
+
+        let qam = QAM::new(4, 0.0, 6.0);
+
+        assert_eq!(qam.i(0, &[0,0,0,0]), -3.0);
+        assert_eq!(qam.q(0, &[0,0,0,0]), -3.0);
+
+        assert_eq!(qam.i(0, &[0,0,0,1]), -3.0);
+        assert_eq!(qam.q(0, &[0,0,0,1]), -1.0);
+
+        assert_eq!(qam.i(0, &[1,0,1,1]), 1.0);
+        assert_eq!(qam.q(0, &[1,0,1,1]), 3.0);
+
+        assert_eq!(qam.i(0, &[1,1,1,1]), 3.0);
+        assert_eq!(qam.q(0, &[1,1,1,1]), 3.0);
     }
 }
