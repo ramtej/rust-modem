@@ -60,6 +60,7 @@ fn main() {
                                                 params.samples_per_bit)),
             "mfsk" => Box::new(digital::MFSK::new(4, freq::Freq::new(50, sr),
                 amplitude, digital::IncreaseMap)),
+            "mpsk" => Box::new(digital::MPSK::new(2, 0.0, amplitude)),
             _ => panic!("invalid digital modulation"),
         }
     };

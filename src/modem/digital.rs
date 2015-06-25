@@ -358,6 +358,45 @@ impl<M: SymbolMap> DigitalPhasor for MFSK<M> {
     }
 }
 
+pub struct MPSK {
+    group_size: u32,
+    num_symbols: f64,
+    amplitude: f64,
+    phase_offset: f64,
+}
+
+impl MPSK {
+    pub fn new(group_size: u32, phase_offset: f64, amplitude: f64) -> MPSK {
+        MPSK {
+            group_size: group_size,
+            num_symbols: (1 << group_size) as f64,
+            amplitude: amplitude,
+            phase_offset: phase_offset,
+        }
+    }
+
+    fn inner(&self, b: &[u8]) -> f64 {
+        self.phase(b) + self.phase_offset
+    }
+
+    fn phase(&self, b: &[u8]) -> f64 {
+        2.0 * std::f64::consts::PI * bytes_to_bits(b) as f64 / self.num_symbols
+    }
+}
+
+impl DigitalPhasor for MPSK {
+    fn group_size(&self) -> u32 { self.group_size }
+
+    fn i(&self, _: usize, b: &[u8]) -> f64 {
+        self.amplitude * self.inner(b).cos()
+    }
+
+    fn q(&self, _: usize, b: &[u8]) -> f64 {
+        self.amplitude * self.inner(b).sin()
+    }
+}
+
+
 #[cfg(test)]
 mod test {
     #[test]
@@ -392,5 +431,24 @@ mod test {
 
         assert_eq!(qam.i(0, &[1,1,1,1]), 3.0);
         assert_eq!(qam.q(0, &[1,1,1,1]), 3.0);
+    }
+
+    #[test]
+    fn test_mpsk() {
+        use super::{MPSK, DigitalPhasor};
+        use std::f64::consts::PI;
+
+        let mpsk = MPSK::new(2, 0.0, 1.0);
+        assert_eq!(mpsk.i(0, &[0, 0]), 1.0);
+        assert_eq!(mpsk.q(0, &[0, 0]), 0.0);
+
+        assert!(mpsk.i(0, &[0, 1]).abs() < 0.001);
+        assert_eq!(mpsk.q(0, &[0, 1]), 1.0);
+
+        assert_eq!(mpsk.i(0, &[1, 0]), -1.0);
+        assert!(mpsk.q(0, &[1, 0]).abs() < 0.001);
+
+        assert!(mpsk.i(0, &[1, 1]).abs() < 0.001);
+        assert_eq!(mpsk.q(0, &[1, 1]), -1.0);
     }
 }
