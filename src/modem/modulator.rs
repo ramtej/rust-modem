@@ -70,7 +70,7 @@ pub struct DigitalModulator<'a> {
     phasor: Box<digital::DigitalPhasor>,
 
     bits: &'a [u8],
-    samples: usize,
+    start_sample: usize,
 
     prev_idx: usize,
 }
@@ -80,15 +80,14 @@ impl<'a> DigitalModulator<'a> {
                b: &'a [u8])
         -> DigitalModulator<'a>
     {
-        let samples = p.samples_per_bit as usize * b.len() /
-            psr.group_size() as usize;
+        let start_sample = c.sample + 1;
 
         DigitalModulator {
             params: p,
             carrier: c,
             phasor: psr,
             bits: b,
-            samples: samples,
+            start_sample: start_sample,
             prev_idx: std::usize::MAX,
         }
     }
@@ -100,12 +99,14 @@ impl<'a> Iterator for DigitalModulator<'a> {
     fn next(&mut self) -> Option<Self::Item> {
         let phase = self.carrier.next();
 
-        if self.carrier.sample >= self.samples {
+        let idx = (self.carrier.sample - self.start_sample) /
+            self.params.samples_per_bit as usize *
+            self.phasor.group_size() as usize;
+
+        if idx > self.bits.len() - self.phasor.group_size() as usize {
             return None;
         }
 
-        let idx = self.carrier.sample / self.params.samples_per_bit as usize *
-            self.phasor.group_size() as usize;
         let bits = &self.bits[idx..idx + self.phasor.group_size() as usize];
 
         if idx != self.prev_idx {
