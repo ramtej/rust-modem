@@ -1,6 +1,7 @@
 use std;
 use super::{util, freq};
 
+#[derive(Copy, Clone)]
 pub struct Carrier {
     sample_freq: f64,
     pub sample: usize,
