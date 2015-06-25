@@ -6,10 +6,9 @@ mod util;
 
 use modem::{carrier, phasor, freq, modulator, integrator, digital};
 use util::Write16;
-use getopts::Options;
 
 fn main() {
-    let mut parser = Options::new();
+    let mut parser = getopts::Options::new();
 
     parser.optflag("h", "help", "show usage")
           .optopt("m", "", "digital modulation to use", "MOD")
