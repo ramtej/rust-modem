@@ -65,13 +65,13 @@ impl<T: Iterator<Item = f64>> Phasor for FM<T> {
     }
 }
 
-pub struct AM {
-    sig: Box<Iterator<Item = f64>>,
+pub struct AM<T: Iterator<Item = f64>> {
+    sig: T,
     amplitude: f64,
 }
 
-impl AM {
-    pub fn new(sig: Box<Iterator<Item = f64>>, amplitude: f64) -> AM {
+impl<T: Iterator<Item = f64>> AM<T> {
+    pub fn new(sig: T, amplitude: f64) -> AM<T> {
         AM {
             sig: sig,
             amplitude: amplitude,
@@ -79,7 +79,7 @@ impl AM {
     }
 }
 
-impl Phasor for AM {
+impl<T: Iterator<Item = f64>> Phasor for AM<T> {
     fn next(&mut self, _: usize) -> Option<(f64, f64)> {
         let next = match self.sig.next() {
             Some(s) => s,

@@ -65,10 +65,8 @@ fn main() {
         }
     };
 
-    let mut dmodul = Box::new(
-        modulator::DigitalModulator::new(params, c, p, bits::BITS)
-            .map(|x| x.re)
-    );
+    let mut dmodul = modulator::DigitalModulator::new(params, c, p, bits::BITS)
+        .map(|x| x.re);
 
     if let Some(s) = amod {
         let aphasor: Box<phasor::Phasor> = match s.as_ref() {
