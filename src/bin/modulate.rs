@@ -7,6 +7,8 @@ mod util;
 use modem::{carrier, phasor, freq, modulator, integrator, digital};
 use util::Write16;
 
+const AMPLITUDE: f64 = std::i16::MAX as f64;
+
 fn main() {
     let mut parser = getopts::Options::new();
 
@@ -42,24 +44,22 @@ fn main() {
         None => 220,
     };
 
-    let amplitude = std::i16::MAX as f64;
-
     let params = modulator::Params::new(br, sr);
     let c = carrier::Carrier::new(freq::Freq::new(900, sr));
 
     let p: Box<digital::DigitalPhasor> = {
         match dmod.as_ref() {
-            "bask" => Box::new(digital::BASK::new(amplitude)),
-            "bpsk" => Box::new(digital::BPSK::new(0.0, amplitude)),
+            "bask" => Box::new(digital::BASK::new(AMPLITUDE)),
+            "bpsk" => Box::new(digital::BPSK::new(0.0, AMPLITUDE)),
             "bfsk" => Box::new(digital::BFSK::new(freq::Freq::new(200, sr),
-                               amplitude)),
-            "qpsk" => Box::new(digital::QPSK::new(0.0, amplitude)),
-            "qam16" => Box::new(digital::QAM::new(4, 0.0, amplitude)),
-            "msk" => Box::new(digital::MSK::new(amplitude,
+                               AMPLITUDE)),
+            "qpsk" => Box::new(digital::QPSK::new(0.0, AMPLITUDE)),
+            "qam16" => Box::new(digital::QAM::new(4, 0.0, AMPLITUDE)),
+            "msk" => Box::new(digital::MSK::new(AMPLITUDE,
                                                 params.samples_per_bit)),
             "mfsk" => Box::new(digital::MFSK::new(4, freq::Freq::new(50, sr),
-                amplitude, digital::IncreaseMap)),
-            "mpsk" => Box::new(digital::MPSK::new(2, 0.0, amplitude)),
+                AMPLITUDE, digital::IncreaseMap)),
+            "mpsk" => Box::new(digital::MPSK::new(2, 0.0, AMPLITUDE)),
             _ => panic!("invalid digital modulation"),
         }
     };
@@ -70,7 +70,7 @@ fn main() {
     if let Some(s) = amod {
         let aphasor: Box<phasor::Phasor> = match s.as_ref() {
             "fm" => {
-                let int = integrator::Integrator::new(dmodul, amplitude);
+                let int = integrator::Integrator::new(dmodul, AMPLITUDE);
 
                 Box::new(phasor::FM::new(int, std::i16::MAX as f64,
                                          freq::Freq::new(1000, sr)))
