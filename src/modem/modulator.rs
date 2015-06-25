@@ -113,10 +113,7 @@ impl<'a> Iterator for DigitalModulator<'a> {
             self.prev_idx = idx;
         }
 
-        let (i, q) = match self.phasor.next(self.carrier.sample, bits) {
-            Some((i, q)) => (i, q),
-            None => return None,
-        };
+        let (i, q) = self.phasor.next(self.carrier.sample, bits);
 
         let cos = phase.cos();
         let sin = phase.sin();

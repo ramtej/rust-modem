@@ -9,8 +9,8 @@ pub trait DigitalPhasor {
     fn i(&self, s: usize, b: &[u8]) -> f64;
     fn q(&self, s: usize, b: &[u8]) -> f64;
 
-    fn next(&self, s: usize, b: &[u8]) -> Option<(f64, f64)> {
-        Some((self.i(s, b), self.q(s, b)))
+    fn next(&self, s: usize, b: &[u8]) -> (f64, f64) {
+        (self.i(s, b), self.q(s, b))
     }
 }
 
