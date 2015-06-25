@@ -81,8 +81,10 @@ fn main() {
             _ => panic!("invalid analog modulation"),
         };
 
-        let fc = carrier::Carrier::new(freq::Freq::new(1000, sr));
-        let mut modul = modulator::Modulator::new(fc, aphasor).map(|x| x.re);
+        let mut modul = modulator::Modulator::new(
+            carrier::Carrier::new(freq::Freq::new(1000, sr)),
+            aphasor
+        ).map(|x| x.re);
 
         output(&mut modul);
     } else {
