@@ -16,5 +16,9 @@ name = "modulate"
 path = "src/bin/modulate.rs"
 
 [[bin]]
+name = "demodulate"
+path = "src/bin/demodulate.rs"
+
+[[bin]]
 name = "fm"
 path = "src/bin/fm.rs"
