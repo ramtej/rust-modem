@@ -43,6 +43,8 @@ impl Modulator {
             phasor: psr,
         }
     }
+
+    pub fn into_carrier(self) -> carrier::Carrier { self.carrier }
 }
 
 impl Iterator for Modulator {
@@ -91,6 +93,8 @@ impl<'a> DigitalModulator<'a> {
             prev_idx: std::usize::MAX,
         }
     }
+
+    pub fn into_carrier(self) -> carrier::Carrier { self.carrier }
 }
 
 impl<'a> Iterator for DigitalModulator<'a> {

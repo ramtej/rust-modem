@@ -45,7 +45,9 @@ fn main() {
     };
 
     let params = modulator::Params::new(br, sr);
-    let carrier = carrier::Carrier::new(freq::Freq::new(900, sr));
+
+    let carrier_freq = freq::Freq::new(900, sr);
+    let carrier = carrier::Carrier::new(carrier_freq);
 
     let phasor: Box<digital::DigitalPhasor> = {
         match dmod.as_ref() {
@@ -63,6 +65,15 @@ fn main() {
             _ => panic!("invalid digital modulation"),
         }
     };
+
+    let mut preamble = modulator::Modulator::new(carrier,
+        Box::new(phasor::Raw::new(AMPLITUDE)));
+
+    output((&mut preamble)
+        .map(|x| x.re)
+        .take(carrier_freq.samples_per_cycle() as usize * 20));
+
+    let carrier = preamble.into_carrier();
 
     let mut dmodul = modulator::DigitalModulator::new(params, carrier, phasor,
         bits::BITS).map(|x| x.re);

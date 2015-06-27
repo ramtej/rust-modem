@@ -24,4 +24,8 @@ impl Freq {
     pub fn sample_freq(&self) -> f64 {
         self.ang_freq() / self.sr as f64
     }
+
+    pub fn samples_per_cycle(&self) -> u32 {
+        self.sr / self.hz
+    }
 }
