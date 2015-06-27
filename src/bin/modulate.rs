@@ -47,7 +47,7 @@ fn main() {
     let params = modulator::Params::new(br, sr);
     let carrier = carrier::Carrier::new(freq::Freq::new(900, sr));
 
-    let p: Box<digital::DigitalPhasor> = {
+    let phasor: Box<digital::DigitalPhasor> = {
         match dmod.as_ref() {
             "bask" => Box::new(digital::BASK::new(AMPLITUDE)),
             "bpsk" => Box::new(digital::BPSK::new(0.0, AMPLITUDE)),
@@ -64,7 +64,7 @@ fn main() {
         }
     };
 
-    let mut dmodul = modulator::DigitalModulator::new(params, carrier, p,
+    let mut dmodul = modulator::DigitalModulator::new(params, carrier, phasor,
         bits::BITS).map(|x| x.re);
 
     if let Some(s) = amod {
