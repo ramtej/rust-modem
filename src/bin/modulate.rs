@@ -92,7 +92,7 @@ fn main() {
     };
 }
 
-fn output(iter: &mut Iterator<Item = f64>) {
+fn output<T: Iterator<Item = f64>>(iter: T) {
     let mut out = std::io::stdout();
 
     for sample in iter {
