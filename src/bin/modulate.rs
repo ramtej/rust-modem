@@ -45,7 +45,7 @@ fn main() {
     };
 
     let params = modulator::Params::new(br, sr);
-    let c = carrier::Carrier::new(freq::Freq::new(900, sr));
+    let carrier = carrier::Carrier::new(freq::Freq::new(900, sr));
 
     let p: Box<digital::DigitalPhasor> = {
         match dmod.as_ref() {
@@ -64,8 +64,8 @@ fn main() {
         }
     };
 
-    let mut dmodul = modulator::DigitalModulator::new(params, c, p, bits::BITS)
-        .map(|x| x.re);
+    let mut dmodul = modulator::DigitalModulator::new(params, carrier, p,
+        bits::BITS).map(|x| x.re);
 
     if let Some(s) = amod {
         let aphasor: Box<phasor::Phasor> = match s.as_ref() {
