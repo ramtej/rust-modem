@@ -71,7 +71,7 @@ fn main() {
 
     output((&mut preamble)
         .map(|x| x.re)
-        .take(carrier_freq.samples_per_cycle() as usize * 20));
+        .take(carrier_freq.samples_for_cycles(20)));
 
     let carrier = preamble.into_carrier();
 

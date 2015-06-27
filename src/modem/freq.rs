@@ -25,7 +25,9 @@ impl Freq {
         self.ang_freq() / self.sr as f64
     }
 
-    pub fn samples_per_cycle(&self) -> u32 {
-        self.sr / self.hz
+    // Calculate the number of samples needed to go through the given number of
+    // cycles of the wave.
+    pub fn samples_for_cycles(&self, cycles: u32) -> usize {
+        (self.sr as f64 / self.hz as f64 * cycles as f64) as usize
     }
 }
