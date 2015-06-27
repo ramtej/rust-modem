@@ -75,7 +75,7 @@ fn main() {
 
     let carrier = preamble.into_carrier();
 
-    let mut dmodul = modulator::DigitalModulator::new(params, carrier, phasor,
+    let dmodul = modulator::DigitalModulator::new(params, carrier, phasor,
         bits::BITS).map(|x| x.re);
 
     if let Some(s) = amod {
@@ -92,14 +92,14 @@ fn main() {
             _ => panic!("invalid analog modulation"),
         };
 
-        let mut modul = modulator::Modulator::new(
+        let modul = modulator::Modulator::new(
             carrier::Carrier::new(freq::Freq::new(1000, sr)),
             aphasor
         ).map(|x| x.re);
 
-        output(&mut modul);
+        output(modul);
     } else {
-        output(&mut dmodul);
+        output(dmodul);
     };
 }
 
