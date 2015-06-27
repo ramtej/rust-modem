@@ -7,6 +7,12 @@ pub trait Write16 {
 
 pub trait Read16 {
     fn read_i16(&mut self) -> std::io::Result<i16>;
+
+    fn iter_16(self) -> Iter16<Self>
+        where Self: Sized
+    {
+        Iter16(self)
+    }
 }
 
 impl<W> Write16 for W where W: std::io::Write {
@@ -25,6 +31,19 @@ impl<R> Read16 for R where R: std::io::Read {
             Ok(_) => Err(std::io::Error::new(std::io::ErrorKind::Other,
                                              "no more words available")),
             Err(e) => Err(e),
+        }
+    }
+}
+
+pub struct Iter16<R: Read16>(R);
+
+impl<R: Read16> Iterator for Iter16<R> {
+    type Item = i16;
+
+    fn next(&mut self) -> Option<Self::Item> {
+        match self.0.read_i16() {
+            Ok(n) => Some(n),
+            Err(_) => None,
         }
     }
 }
