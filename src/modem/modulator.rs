@@ -105,13 +105,13 @@ impl<'a> Iterator for DigitalModulator<'a> {
 
         let idx = (self.carrier.sample - self.start_sample) /
             self.params.samples_per_symbol as usize *
-            self.phasor.group_size() as usize;
+            self.phasor.bits_per_symbol() as usize;
 
-        if idx > self.bits.len() - self.phasor.group_size() as usize {
+        if idx > self.bits.len() - self.phasor.bits_per_symbol() as usize {
             return None;
         }
 
-        let bits = &self.bits[idx..idx + self.phasor.group_size() as usize];
+        let bits = &self.bits[idx..idx + self.phasor.bits_per_symbol() as usize];
 
         if idx != self.prev_idx {
             self.phasor.update(self.carrier.sample, bits);
