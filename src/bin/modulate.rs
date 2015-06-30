@@ -58,7 +58,7 @@ fn main() {
             "qpsk" => Box::new(digital::QPSK::new(0.0, AMPLITUDE)),
             "qam16" => Box::new(digital::QAM::new(4, 0.0, AMPLITUDE)),
             "msk" => Box::new(digital::MSK::new(AMPLITUDE,
-                                                params.samples_per_bit)),
+                                                params.samples_per_symbol)),
             "mfsk" => Box::new(digital::MFSK::new(4, freq::Freq::new(50, sr),
                 AMPLITUDE, digital::IncreaseMap)),
             "mpsk" => Box::new(digital::MPSK::new(2, 0.0, AMPLITUDE)),

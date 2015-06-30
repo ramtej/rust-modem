@@ -9,8 +9,8 @@ pub struct Params {
     pub baud_rate: u32,
     // Samples per second.
     pub sample_rate: u32,
-    // Samples per bit.
-    pub samples_per_bit: u32,
+    // Samples per symbol.
+    pub samples_per_symbol: u32,
 }
 
 impl Params {
@@ -18,7 +18,7 @@ impl Params {
         Params {
             baud_rate: br,
             sample_rate: sr,
-            samples_per_bit: sr / br,
+            samples_per_symbol: sr / br,
         }
     }
 }
@@ -104,7 +104,7 @@ impl<'a> Iterator for DigitalModulator<'a> {
         let phase = self.carrier.next();
 
         let idx = (self.carrier.sample - self.start_sample) /
-            self.params.samples_per_bit as usize *
+            self.params.samples_per_symbol as usize *
             self.phasor.group_size() as usize;
 
         if idx > self.bits.len() - self.phasor.group_size() as usize {
