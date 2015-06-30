@@ -111,9 +111,7 @@ impl<'a> Iterator for DigitalModulator<'a> {
         // The index past the last bit in the current symbol.
         let end = bit + self.phasor.bits_per_symbol() as usize;
 
-        if end > self.bits.len() {
-            return None;
-        }
+        assert!(end <= self.bits.len());
 
         let bits = &self.bits[bit..end];
 
