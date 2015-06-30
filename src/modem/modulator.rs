@@ -74,7 +74,7 @@ pub struct DigitalModulator<'a> {
     bits: &'a [u8],
     start_sample: usize,
 
-    cur_symbol: usize,
+    cur_bit: usize,
 }
 
 impl<'a> DigitalModulator<'a> {
@@ -90,7 +90,7 @@ impl<'a> DigitalModulator<'a> {
             phasor: psr,
             bits: b,
             start_sample: start_sample,
-            cur_symbol: std::usize::MAX,
+            cur_bit: std::usize::MAX,
         }
     }
 
@@ -103,21 +103,21 @@ impl<'a> Iterator for DigitalModulator<'a> {
     fn next(&mut self) -> Option<Self::Item> {
         let phase = self.carrier.next();
 
-        let symbol = (self.carrier.sample - self.start_sample) /
+        let bit = (self.carrier.sample - self.start_sample) /
             self.params.samples_per_symbol as usize *
             self.phasor.bits_per_symbol() as usize;
 
-        let end = symbol + self.phasor.bits_per_symbol() as usize;
+        let end = bit + self.phasor.bits_per_symbol() as usize;
 
         if end > self.bits.len() {
             return None;
         }
 
-        let bits = &self.bits[symbol..end];
+        let bits = &self.bits[bit..end];
 
-        if symbol != self.cur_symbol {
+        if bit != self.cur_bit {
             self.phasor.update(self.carrier.sample, bits);
-            self.cur_symbol = symbol;
+            self.cur_bit = bit;
         }
 
         let (i, q) = self.phasor.next(self.carrier.sample, bits);
