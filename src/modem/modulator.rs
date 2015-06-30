@@ -103,10 +103,12 @@ impl<'a> Iterator for DigitalModulator<'a> {
     fn next(&mut self) -> Option<Self::Item> {
         let phase = self.carrier.next();
 
+        // The bit index of the current symbol in the data stream.
         let bit = (self.carrier.sample - self.start_sample) /
             self.params.samples_per_symbol as usize *
             self.phasor.bits_per_symbol() as usize;
 
+        // The index past the last bit in the current symbol.
         let end = bit + self.phasor.bits_per_symbol() as usize;
 
         if end > self.bits.len() {
