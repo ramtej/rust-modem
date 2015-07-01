@@ -260,6 +260,30 @@ impl DigitalPhasor for MSK {
     }
 }
 
+pub struct OQPSK {
+    amplitude: f64,
+}
+
+impl OQPSK {
+    pub fn new(amplitude: f64) -> OQPSK {
+        OQPSK {
+            amplitude: amplitude * 0.5f64.sqrt(),
+        }
+    }
+}
+
+impl DigitalPhasor for OQPSK {
+    fn bits_per_symbol(&self) -> u32 { 2 }
+
+    fn i(&self, _: usize, b: &[u8]) -> f64 {
+        bit_to_sign(b[0]) * self.amplitude
+    }
+
+    fn q(&self, _: usize, b: &[u8]) -> f64 {
+        bit_to_sign(b[1]) * self.amplitude
+    }
+}
+
 pub trait SymbolMap {
     fn coef(&self, symbol: u8) -> f64;
 }

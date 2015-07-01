@@ -62,6 +62,7 @@ fn main() {
         "mfsk" => Box::new(digital::MFSK::new(4, freq::Freq::new(50, sr),
             AMPLITUDE, digital::IncreaseMap)),
         "mpsk" => Box::new(digital::MPSK::new(2, 0.0, AMPLITUDE)),
+        "oqpsk" => Box::new(digital::OQPSK::new(AMPLITUDE)),
         _ => panic!("invalid digital modulation"),
     };
 
@@ -77,9 +78,10 @@ fn main() {
     let bits = data::Bits::new(bits::BITS, params.samples_per_symbol as usize,
                                phasor.bits_per_symbol() as usize);
     let src: Box<data::Source> = match dmod.as_ref() {
-        "msk" => Box::new(data::EvenOddOffset::new(bits,
-                    params.samples_per_symbol as usize,
-                    phasor.bits_per_symbol() as usize)),
+        "msk" | "oqpsk" =>
+            Box::new(data::EvenOddOffset::new(bits,
+                params.samples_per_symbol as usize,
+                phasor.bits_per_symbol() as usize)),
         _ => Box::new(bits),
     };
 
