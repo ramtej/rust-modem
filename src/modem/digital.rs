@@ -232,50 +232,31 @@ impl DigitalPhasor for QAM {
 pub struct MSK {
     amplitude: f64,
     samples_per_bit: f64,
-    bit: usize,
-    bits: [u8; 2],
 }
 
 impl MSK {
-    pub fn new(amplitude: f64, samples_per_bit: u32) -> MSK {
+    pub fn new(amplitude: f64, samples_per_symbol: u32) -> MSK {
         MSK {
             amplitude: amplitude,
-            samples_per_bit: samples_per_bit as f64,
-            bit: 1,
-            bits: [0, 0],
+            samples_per_bit: samples_per_symbol as f64 / 2.0,
         }
     }
 
-    fn b(&self) -> f64 {
-        if self.bits[0] == self.bits[1] { 1.0 } else { -1.0 }
-    }
-
-    fn phi(&self) -> f64 {
-        if self.bits[0] == 1 { 0.0 } else { std::f64::consts::PI }
-    }
-
     fn inner(&self, s: usize) -> f64 {
-        self.b() * std::f64::consts::FRAC_PI_2 * s as f64 /
-            self.samples_per_bit + self.phi()
+        std::f64::consts::PI/2.0 * s as f64 / self.samples_per_bit -
+            std::f64::consts::PI/2.0
     }
 }
 
 impl DigitalPhasor for MSK {
-    fn bits_per_symbol(&self) -> u32 { 1 }
+    fn bits_per_symbol(&self) -> u32 { 2 }
 
-    fn i(&self, s: usize, _: &[u8]) -> f64 {
-        self.amplitude * self.inner(s).cos()
+    fn i(&self, s: usize, b: &[u8]) -> f64 {
+        self.amplitude * bit_to_sign(b[0]) * self.inner(s).cos()
     }
 
-    fn q(&self, s: usize, _: &[u8]) -> f64 {
-        self.amplitude * self.inner(s).sin()
-    }
-
-    fn update(&mut self, _: usize, b: &[u8]) {
-        self.bits[self.bit] = b[0];
-
-        self.bit += 1;
-        self.bit %= 2;
+    fn q(&self, s: usize, b: &[u8]) -> f64 {
+        self.amplitude * bit_to_sign(b[1]) * self.inner(s).sin()
     }
 }
 

@@ -76,7 +76,14 @@ fn main() {
 
     let bits = data::Bits::new(bits::BITS, params.samples_per_symbol as usize,
                                phasor.bits_per_symbol() as usize);
-    let dmodul = modulator::DigitalModulator::new(carrier, phasor, Box::new(bits))
+    let src: Box<data::Source> = match dmod.as_ref() {
+        "msk" => Box::new(data::EvenOddOffset::new(bits,
+                    params.samples_per_symbol as usize,
+                    phasor.bits_per_symbol() as usize)),
+        _ => Box::new(bits),
+    };
+
+    let dmodul = modulator::DigitalModulator::new(carrier, phasor, src)
         .map(|x| x.re);
 
     if let Some(s) = amod {
