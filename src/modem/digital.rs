@@ -289,20 +289,20 @@ pub trait SymbolMap {
 }
 
 pub struct DefaultMap {
-    max_symbol: usize,
+    max_symbol: i32,
 }
 
 impl DefaultMap {
     pub fn new(bits_per_symbol: usize) -> DefaultMap {
         DefaultMap {
-            max_symbol: max_symbol(bits_per_symbol),
+            max_symbol: max_symbol(bits_per_symbol) as i32,
         }
     }
 }
 
 impl SymbolMap for DefaultMap {
     fn coef(&self, symbol: u8) -> f64 {
-        (2 * symbol as i32 - self.max_symbol as i32) as f64
+        (2 * symbol as i32 - self.max_symbol) as f64
     }
 }
 
