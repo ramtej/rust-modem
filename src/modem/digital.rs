@@ -295,7 +295,7 @@ pub struct DefaultMap {
 impl DefaultMap {
     pub fn new(bits_per_symbol: usize) -> DefaultMap {
         DefaultMap {
-            max_symbol: (1 << bits_per_symbol) - 1,
+            max_symbol: max_symbol(bits_per_symbol),
         }
     }
 }
