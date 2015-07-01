@@ -4,7 +4,7 @@ extern crate getopts;
 mod bits;
 mod util;
 
-use modem::{carrier, phasor, freq, modulator, integrator, digital};
+use modem::{carrier, phasor, freq, modulator, integrator, digital, data};
 use util::Write16;
 
 const AMPLITUDE: f64 = std::i16::MAX as f64;
@@ -75,8 +75,9 @@ fn main() {
 
     let carrier = preamble.into_carrier();
 
-    let dmodul = modulator::DigitalModulator::new(params, carrier, phasor,
-        bits::BITS).map(|x| x.re);
+    let dmodul = modulator::DigitalModulator::new(params, carrier, phasor, |sps, bps| {
+        Box::new(data::Bits::new(bits::BITS, sps as usize, bps as usize))
+    }).map(|x| x.re);
 
     if let Some(s) = amod {
         let aphasor: Box<phasor::Phasor> = match s.as_ref() {

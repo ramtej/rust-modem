@@ -1,7 +1,6 @@
 extern crate num;
 
-use super::{phasor, digital, carrier};
-use std;
+use super::{phasor, digital, carrier, data};
 
 #[derive(Copy, Clone)]
 pub struct Params {
@@ -65,60 +64,46 @@ impl Iterator for Modulator {
     }
 }
 
-pub struct DigitalModulator<'a> {
-    params: Params,
-
+pub struct DigitalModulator {
+    data: Box<data::Source>,
     carrier: carrier::Carrier,
     phasor: Box<digital::DigitalPhasor>,
-
-    bits: &'a [u8],
     start_sample: usize,
-
-    cur_bit: usize,
 }
 
-impl<'a> DigitalModulator<'a> {
-    pub fn new(p: Params, c: carrier::Carrier, psr: Box<digital::DigitalPhasor>,
-               b: &'a [u8])
-        -> DigitalModulator<'a>
+impl DigitalModulator {
+    pub fn new<F>(p: Params, c: carrier::Carrier, psr: Box<digital::DigitalPhasor>,
+                  f: F)
+        -> DigitalModulator
+        where F: Fn(u32, u32) -> Box<data::Source>,
     {
         let start_sample = c.sample + 1;
 
         DigitalModulator {
-            params: p,
+            data: f(p.samples_per_symbol, psr.bits_per_symbol()),
             carrier: c,
             phasor: psr,
-            bits: b,
             start_sample: start_sample,
-            cur_bit: std::usize::MAX,
         }
     }
 
     pub fn into_carrier(self) -> carrier::Carrier { self.carrier }
 }
 
-impl<'a> Iterator for DigitalModulator<'a> {
+impl Iterator for DigitalModulator {
     type Item = num::Complex<f64>;
 
     fn next(&mut self) -> Option<Self::Item> {
         let phase = self.carrier.next();
 
-        // The bit index of the current symbol in the data stream.
-        let bit = (self.carrier.sample - self.start_sample) /
-            self.params.samples_per_symbol as usize *
-            self.phasor.bits_per_symbol() as usize;
-
-        // The index past the last bit in the current symbol.
-        let end = bit + self.phasor.bits_per_symbol() as usize;
-
-        assert!(end <= self.bits.len());
-
-        let bits = &self.bits[bit..end];
-
-        if bit != self.cur_bit {
-            self.phasor.update(self.carrier.sample, bits);
-            self.cur_bit = bit;
-        }
+        let bits = match self.data.update(self.carrier.sample - self.start_sample) {
+            data::SourceUpdate::Finished => return None,
+            data::SourceUpdate::Changed(b) => {
+                self.phasor.update(self.carrier.sample, b);
+                b
+            }
+            data::SourceUpdate::Unchanged(b) => b,
+        };
 
         let (i, q) = self.phasor.next(self.carrier.sample, bits);
 
