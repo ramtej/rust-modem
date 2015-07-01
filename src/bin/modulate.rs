@@ -52,7 +52,7 @@ fn main() {
     let phasor: Box<digital::DigitalPhasor> = {
         match dmod.as_ref() {
             "bask" => Box::new(digital::BASK::new(AMPLITUDE)),
-            "bpsk" => Box::new(digital::BPSK::new(0.0, AMPLITUDE)),
+            "bpsk" => Box::new(digital::BPSK::new(std::f64::consts::PI/4.0, AMPLITUDE)),
             "bfsk" => Box::new(digital::BFSK::new(freq::Freq::new(200, sr),
                                AMPLITUDE)),
             "qpsk" => Box::new(digital::QPSK::new(0.0, AMPLITUDE)),
