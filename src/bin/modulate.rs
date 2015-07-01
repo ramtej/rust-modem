@@ -45,9 +45,7 @@ fn main() {
     };
 
     let params = modulator::Params::new(br, sr);
-
-    let carrier_freq = freq::Freq::new(900, sr);
-    let carrier = carrier::Carrier::new(carrier_freq);
+    let carrier = carrier::Carrier::new(freq::Freq::new(900, sr));
 
     let phasor: Box<digital::DigitalPhasor> = match dmod.as_ref() {
         "bask" => Box::new(digital::BASK::new(AMPLITUDE)),
@@ -71,7 +69,7 @@ fn main() {
 
     output((&mut preamble)
         .map(|x| x.re)
-        .take(carrier_freq.samples_for_cycles(20)));
+        .take(params.samples_per_symbol * 8));
 
     let carrier = preamble.into_carrier();
 
