@@ -1,4 +1,5 @@
 extern crate num;
+
 use super::{carrier, pll, fir};
 
 const LOCK_SAMPLES: usize = 64;

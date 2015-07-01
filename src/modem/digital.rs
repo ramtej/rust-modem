@@ -1,5 +1,5 @@
-use super::{util, freq};
 use std;
+use super::{util, freq};
 
 pub trait DigitalPhasor {
     fn bits_per_symbol(&self) -> usize;
