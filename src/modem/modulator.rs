@@ -65,10 +65,10 @@ impl Iterator for Modulator {
 }
 
 pub struct DigitalModulator {
+    start_sample: usize,
     data: Box<data::Source>,
     carrier: carrier::Carrier,
     phasor: Box<digital::DigitalPhasor>,
-    start_sample: usize,
 }
 
 impl DigitalModulator {
@@ -76,13 +76,11 @@ impl DigitalModulator {
                src: Box<data::Source>)
         -> DigitalModulator
     {
-        let start_sample = c.sample + 1;
-
         DigitalModulator {
+            start_sample: c.sample + 1,
             data: src,
             carrier: c,
             phasor: psr,
-            start_sample: start_sample,
         }
     }
 
