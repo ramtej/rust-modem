@@ -92,6 +92,49 @@ impl<'a> Source for Bits<'a> {
     }
 }
 
+pub struct EvenOddOffset<D: Source> {
+    data: D,
+    clock: SymbolClock,
+    cur: [u8; 2],
+}
+
+impl<D: Source> EvenOddOffset<D> {
+    pub fn new(data: D, samples_per_symbol: usize, bits_per_symbol: usize)
+        -> EvenOddOffset<D>
+    {
+        assert!(bits_per_symbol == 2);
+
+        EvenOddOffset {
+            data: data,
+            clock: SymbolClock::new(samples_per_symbol / bits_per_symbol),
+            cur: [0, 0],
+        }
+    }
+}
+
+impl<D: Source> Source for EvenOddOffset<D> {
+    fn update(&mut self, s: usize) -> SourceUpdate {
+        let bits = match self.data.update(s) {
+            SourceUpdate::Finished => return SourceUpdate::Finished,
+            SourceUpdate::Changed(b) => {
+                self.clock.update(s);
+                self.cur[0] = b[0];
+
+                return SourceUpdate::Changed(&self.cur[..]);
+            }
+            SourceUpdate::Unchanged(b) => b,
+        };
+
+        // Half-symbol update?
+        if self.clock.update(s) {
+            self.cur[1] = bits[1];
+            SourceUpdate::Changed(&self.cur[..])
+        } else {
+            SourceUpdate::Unchanged(&self.cur[..])
+        }
+    }
+}
+
 #[cfg(test)]
 mod test {
     #[test]
@@ -132,6 +175,56 @@ mod test {
         assert!(if let SourceUpdate::Unchanged(_) = ds.update(18) { true } else { false });
 
         assert!(match ds.update(20) {
+            SourceUpdate::Finished => true,
+            _ => false,
+        });
+    }
+
+    #[test]
+    fn test_evenodd() {
+        use super::{EvenOddOffset, Bits, Source, SourceUpdate};
+
+        const BITS: &'static [u8] = &[1, 0, 0, 1];
+
+        let ds = Bits::new(BITS, 10, 2);
+        let mut eo = EvenOddOffset::new(ds, 10, 2);
+
+        assert!(match eo.update(0) {
+            SourceUpdate::Changed(b) => b[0] == 1 && b[1] == 0,
+            _ => false,
+        });
+
+        assert!(match eo.update(3) {
+            SourceUpdate::Unchanged(b) => b[0] == 1 && b[1] == 0,
+            _ => false,
+        });
+
+        assert!(match eo.update(5) {
+            SourceUpdate::Changed(b) => b[0] == 1 && b[1] == 0,
+            _ => false,
+        });
+
+        assert!(match eo.update(10) {
+            SourceUpdate::Changed(b) => b[0] == 0 && b[1] == 0,
+            _ => false,
+        });
+
+        assert!(match eo.update(14) {
+            SourceUpdate::Unchanged(b) => b[0] == 0 && b[1] == 0,
+            _ => false,
+        });
+
+        assert!(match eo.update(15) {
+            SourceUpdate::Changed(b) => b[0] == 0 && b[1] == 1,
+            _ => false,
+        });
+
+        assert!(match eo.update(16) {
+            SourceUpdate::Unchanged(b) => b[0] == 0 && b[1] == 1,
+            _ => false,
+        });
+
+        assert!(match eo.update(20) {
             SourceUpdate::Finished => true,
             _ => false,
         });
