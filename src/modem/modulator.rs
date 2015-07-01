@@ -72,15 +72,14 @@ pub struct DigitalModulator {
 }
 
 impl DigitalModulator {
-    pub fn new<F>(p: Params, c: carrier::Carrier, psr: Box<digital::DigitalPhasor>,
-                  f: F)
+    pub fn new(c: carrier::Carrier, psr: Box<digital::DigitalPhasor>,
+               src: Box<data::Source>)
         -> DigitalModulator
-        where F: Fn(u32, u32) -> Box<data::Source>,
     {
         let start_sample = c.sample + 1;
 
         DigitalModulator {
-            data: f(p.samples_per_symbol, psr.bits_per_symbol()),
+            data: src,
             carrier: c,
             phasor: psr,
             start_sample: start_sample,

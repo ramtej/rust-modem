@@ -74,9 +74,10 @@ fn main() {
 
     let carrier = preamble.into_carrier();
 
-    let dmodul = modulator::DigitalModulator::new(params, carrier, phasor, |sps, bps| {
-        Box::new(data::Bits::new(bits::BITS, sps as usize, bps as usize))
-    }).map(|x| x.re);
+    let bits = data::Bits::new(bits::BITS, params.samples_per_symbol as usize,
+                               phasor.bits_per_symbol() as usize);
+    let dmodul = modulator::DigitalModulator::new(carrier, phasor, Box::new(bits))
+        .map(|x| x.re);
 
     if let Some(s) = amod {
         let aphasor: Box<phasor::Phasor> = match s.as_ref() {
