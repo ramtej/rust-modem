@@ -7,7 +7,7 @@ mod util;
 use modem::{carrier, freq, demodulator};
 use util::Read16;
 
-const SAMPLE_RATE: u32 = 10000;
+const SAMPLE_RATE: usize = 10000;
 
 fn main() {
     let input = std::io::stdin().iter_16().map(|x| x as f64);

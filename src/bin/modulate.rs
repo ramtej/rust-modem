@@ -34,12 +34,12 @@ fn main() {
 
     let amod = opts.opt_str("n");
 
-    let sr: u32 = match opts.opt_str("r") {
+    let sr: usize = match opts.opt_str("r") {
         Some(s) => s.parse().unwrap(),
         None => 10000,
     };
 
-    let br: u32 = match opts.opt_str("b") {
+    let br: usize = match opts.opt_str("b") {
         Some(s) => s.parse().unwrap(),
         None => 220,
     };
@@ -75,13 +75,13 @@ fn main() {
 
     let carrier = preamble.into_carrier();
 
-    let bits = data::Bits::new(bits::BITS, params.samples_per_symbol as usize,
-                               phasor.bits_per_symbol() as usize);
+    let bits = data::Bits::new(bits::BITS, params.samples_per_symbol,
+                               phasor.bits_per_symbol());
     let src: Box<data::Source> = match dmod.as_ref() {
         "msk" | "oqpsk" =>
             Box::new(data::EvenOddOffset::new(bits,
-                params.samples_per_symbol as usize,
-                phasor.bits_per_symbol() as usize)),
+                params.samples_per_symbol,
+                phasor.bits_per_symbol())),
         _ => Box::new(bits),
     };
 

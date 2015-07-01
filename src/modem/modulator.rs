@@ -5,15 +5,15 @@ use super::{phasor, digital, carrier, data};
 #[derive(Copy, Clone)]
 pub struct Params {
     // Symbols per second.
-    pub baud_rate: u32,
+    pub baud_rate: usize,
     // Samples per second.
-    pub sample_rate: u32,
+    pub sample_rate: usize,
     // Samples per symbol.
-    pub samples_per_symbol: u32,
+    pub samples_per_symbol: usize,
 }
 
 impl Params {
-    pub fn new(br: u32, sr: u32) -> Params {
+    pub fn new(br: usize, sr: usize) -> Params {
         Params {
             baud_rate: br,
             sample_rate: sr,

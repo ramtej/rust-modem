@@ -6,7 +6,7 @@ use modem::{carrier, freq, modulator, integrator, phasor};
 use util::Write16;
 
 // Samples per second.
-const SAMPLES_PER_SEC: u32 = 10000;
+const SAMPLES_PER_SEC: usize = 10000;
 // Amplitude for the signal.
 const AMPLITUDE: f64 = std::i16::MAX as f64;
 

@@ -46,7 +46,7 @@ impl SymbolClock {
     }
 
     fn sample_to_idx(&self, s: usize) -> usize {
-        s / self.samples_per_symbol as usize
+        s / self.samples_per_symbol
     }
 }
 

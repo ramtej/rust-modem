@@ -2,7 +2,7 @@ use super::{util, freq};
 use std;
 
 pub trait DigitalPhasor {
-    fn bits_per_symbol(&self) -> u32;
+    fn bits_per_symbol(&self) -> usize;
 
     fn update(&mut self, _s: usize, _b: &[u8]) {}
 
@@ -26,7 +26,7 @@ fn bytes_to_bits(bytes: &[u8]) -> u8 {
     })
 }
 
-fn max_symbol(bits_per_symbol: u32) -> u32 {
+fn max_symbol(bits_per_symbol: usize) -> usize {
     (1 << bits_per_symbol) - 1
 }
 
@@ -49,7 +49,7 @@ impl BPSK {
 }
 
 impl DigitalPhasor for BPSK {
-    fn bits_per_symbol(&self) -> u32 { 1 }
+    fn bits_per_symbol(&self) -> usize { 1 }
 
     fn i(&self, _: usize, b: &[u8]) -> f64 {
         self.common(b[0]) * self.phase.cos()
@@ -73,7 +73,7 @@ impl BASK {
 }
 
 impl DigitalPhasor for BASK {
-    fn bits_per_symbol(&self) -> u32 { 1 }
+    fn bits_per_symbol(&self) -> usize { 1 }
 
     fn i(&self, _: usize, b: &[u8]) -> f64 {
         b[0] as f64 * self.amplitude
@@ -111,7 +111,7 @@ impl BFSK {
 }
 
 impl DigitalPhasor for BFSK {
-    fn bits_per_symbol(&self) -> u32 { 1 }
+    fn bits_per_symbol(&self) -> usize { 1 }
 
     fn i(&self, s: usize, b: &[u8]) -> f64 {
         self.amplitude * self.inner(s, b[0]).cos()
@@ -153,7 +153,7 @@ impl QPSK {
 }
 
 impl DigitalPhasor for QPSK {
-    fn bits_per_symbol(&self) -> u32 { 2 }
+    fn bits_per_symbol(&self) -> usize { 2 }
 
     fn i(&self, _: usize, b: &[u8]) -> f64 {
         self.amplitude * (
@@ -171,9 +171,9 @@ impl DigitalPhasor for QPSK {
 }
 
 pub struct QAM {
-    bits_per_symbol: u32,
+    bits_per_symbol: usize,
     // Number of bits per carrier.
-    carrier_size: u32,
+    carrier_size: usize,
     max_symbol: f64,
     phase_cos: f64,
     phase_sin: f64,
@@ -181,7 +181,7 @@ pub struct QAM {
 }
 
 impl QAM {
-    pub fn new(bits_per_symbol: u32, phase: f64, amplitude: f64) -> QAM {
+    pub fn new(bits_per_symbol: usize, phase: f64, amplitude: f64) -> QAM {
         // Must have a bit for i and a bit for q.
         assert!(bits_per_symbol > 1);
 
@@ -208,10 +208,10 @@ impl QAM {
 }
 
 impl DigitalPhasor for QAM {
-    fn bits_per_symbol(&self) -> u32 { self.bits_per_symbol }
+    fn bits_per_symbol(&self) -> usize { self.bits_per_symbol }
 
     fn i(&self, _: usize, b: &[u8]) -> f64 {
-        let (msb, lsb) = b.split_at(self.carrier_size as usize);
+        let (msb, lsb) = b.split_at(self.carrier_size);
 
         self.amplitude * (
             self.pos_bytes(msb) * self.phase_cos -
@@ -220,7 +220,7 @@ impl DigitalPhasor for QAM {
     }
 
     fn q(&self, _: usize, b: &[u8]) -> f64 {
-        let (msb, lsb) = b.split_at(self.carrier_size as usize);
+        let (msb, lsb) = b.split_at(self.carrier_size);
 
         self.amplitude * (
             self.pos_bytes(lsb) * self.phase_cos +
@@ -235,7 +235,7 @@ pub struct MSK {
 }
 
 impl MSK {
-    pub fn new(amplitude: f64, samples_per_symbol: u32) -> MSK {
+    pub fn new(amplitude: f64, samples_per_symbol: usize) -> MSK {
         MSK {
             amplitude: amplitude,
             samples_per_bit: samples_per_symbol as f64 / 2.0,
@@ -249,7 +249,7 @@ impl MSK {
 }
 
 impl DigitalPhasor for MSK {
-    fn bits_per_symbol(&self) -> u32 { 2 }
+    fn bits_per_symbol(&self) -> usize { 2 }
 
     fn i(&self, s: usize, b: &[u8]) -> f64 {
         self.amplitude * bit_to_sign(b[0]) * self.inner(s).cos()
@@ -273,7 +273,7 @@ impl OQPSK {
 }
 
 impl DigitalPhasor for OQPSK {
-    fn bits_per_symbol(&self) -> u32 { 2 }
+    fn bits_per_symbol(&self) -> usize { 2 }
 
     fn i(&self, _: usize, b: &[u8]) -> f64 {
         bit_to_sign(b[0]) * self.amplitude
@@ -289,11 +289,11 @@ pub trait SymbolMap {
 }
 
 pub struct DefaultMap {
-    max_symbol: u32,
+    max_symbol: usize,
 }
 
 impl DefaultMap {
-    pub fn new(bits_per_symbol: u32) -> DefaultMap {
+    pub fn new(bits_per_symbol: usize) -> DefaultMap {
         DefaultMap {
             max_symbol: (1 << bits_per_symbol) - 1,
         }
@@ -315,7 +315,7 @@ impl SymbolMap for IncreaseMap {
 }
 
 pub struct MFSK<M: SymbolMap> {
-    bits_per_symbol: u32,
+    bits_per_symbol: usize,
     deviation: f64,
     amplitude: f64,
     map: M,
@@ -324,7 +324,7 @@ pub struct MFSK<M: SymbolMap> {
 }
 
 impl<M: SymbolMap> MFSK<M> {
-    pub fn new(bits_per_symbol: u32, deviation: freq::Freq, amplitude: f64, map: M)
+    pub fn new(bits_per_symbol: usize, deviation: freq::Freq, amplitude: f64, map: M)
         -> MFSK<M>
     {
         MFSK {
@@ -343,7 +343,7 @@ impl<M: SymbolMap> MFSK<M> {
 }
 
 impl<M: SymbolMap> DigitalPhasor for MFSK<M> {
-    fn bits_per_symbol(&self) -> u32 { self.bits_per_symbol }
+    fn bits_per_symbol(&self) -> usize { self.bits_per_symbol }
 
     fn update(&mut self, s: usize, b: &[u8]) {
         let next_coef = self.map.coef(bytes_to_bits(b));
@@ -364,14 +364,14 @@ impl<M: SymbolMap> DigitalPhasor for MFSK<M> {
 }
 
 pub struct MPSK {
-    bits_per_symbol: u32,
+    bits_per_symbol: usize,
     num_symbols: f64,
     amplitude: f64,
     phase_offset: f64,
 }
 
 impl MPSK {
-    pub fn new(bits_per_symbol: u32, phase_offset: f64, amplitude: f64) -> MPSK {
+    pub fn new(bits_per_symbol: usize, phase_offset: f64, amplitude: f64) -> MPSK {
         MPSK {
             bits_per_symbol: bits_per_symbol,
             num_symbols: (1 << bits_per_symbol) as f64,
@@ -390,7 +390,7 @@ impl MPSK {
 }
 
 impl DigitalPhasor for MPSK {
-    fn bits_per_symbol(&self) -> u32 { self.bits_per_symbol }
+    fn bits_per_symbol(&self) -> usize { self.bits_per_symbol }
 
     fn i(&self, _: usize, b: &[u8]) -> f64 {
         self.amplitude * self.inner(b).cos()
