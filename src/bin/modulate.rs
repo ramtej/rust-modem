@@ -49,22 +49,20 @@ fn main() {
     let carrier_freq = freq::Freq::new(900, sr);
     let carrier = carrier::Carrier::new(carrier_freq);
 
-    let phasor: Box<digital::DigitalPhasor> = {
-        match dmod.as_ref() {
-            "bask" => Box::new(digital::BASK::new(AMPLITUDE)),
-            "bpsk" => Box::new(digital::BPSK::new(std::f64::consts::PI/4.0, AMPLITUDE)),
-            "bfsk" => Box::new(digital::BFSK::new(freq::Freq::new(200, sr),
-                               AMPLITUDE)),
-            "qpsk" => Box::new(digital::QPSK::new(0.0, AMPLITUDE)),
-            "qam16" => Box::new(digital::QAM::new(4, 0.0, AMPLITUDE)),
-            "qam256" => Box::new(digital::QAM::new(8, 0.0, AMPLITUDE)),
-            "msk" => Box::new(digital::MSK::new(AMPLITUDE,
-                                                params.samples_per_symbol)),
-            "mfsk" => Box::new(digital::MFSK::new(4, freq::Freq::new(50, sr),
-                AMPLITUDE, digital::IncreaseMap)),
-            "mpsk" => Box::new(digital::MPSK::new(2, 0.0, AMPLITUDE)),
-            _ => panic!("invalid digital modulation"),
-        }
+    let phasor: Box<digital::DigitalPhasor> = match dmod.as_ref() {
+        "bask" => Box::new(digital::BASK::new(AMPLITUDE)),
+        "bpsk" => Box::new(digital::BPSK::new(std::f64::consts::PI/4.0, AMPLITUDE)),
+        "bfsk" => Box::new(digital::BFSK::new(freq::Freq::new(200, sr),
+                           AMPLITUDE)),
+        "qpsk" => Box::new(digital::QPSK::new(0.0, AMPLITUDE)),
+        "qam16" => Box::new(digital::QAM::new(4, 0.0, AMPLITUDE)),
+        "qam256" => Box::new(digital::QAM::new(8, 0.0, AMPLITUDE)),
+        "msk" => Box::new(digital::MSK::new(AMPLITUDE,
+                                            params.samples_per_symbol)),
+        "mfsk" => Box::new(digital::MFSK::new(4, freq::Freq::new(50, sr),
+            AMPLITUDE, digital::IncreaseMap)),
+        "mpsk" => Box::new(digital::MPSK::new(2, 0.0, AMPLITUDE)),
+        _ => panic!("invalid digital modulation"),
     };
 
     let mut preamble = modulator::Modulator::new(carrier,
