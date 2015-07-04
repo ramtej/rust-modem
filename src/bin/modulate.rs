@@ -59,7 +59,7 @@ fn main() {
                                             params.samples_per_symbol)),
         "mfsk" => Box::new(digital::MFSK::new(4, freq::Freq::new(50, sr),
             AMPLITUDE, digital::IncreaseMap)),
-        "mpsk" => Box::new(digital::MPSK::new(2, 0.0, AMPLITUDE)),
+        "16psk" => Box::new(digital::MPSK::new(4, 0.0, AMPLITUDE)),
         "oqpsk" => Box::new(digital::OQPSK::new(AMPLITUDE)),
         _ => panic!("invalid digital modulation"),
     };
