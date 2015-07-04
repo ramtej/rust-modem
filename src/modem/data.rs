@@ -41,6 +41,9 @@ impl SymbolClock {
         if self.cur_idx == idx {
             None
         } else {
+            // Ensure the index moved forward and only by one symbol.
+            assert!(idx == self.cur_idx + 1);
+
             Some(idx)
         }
     }
