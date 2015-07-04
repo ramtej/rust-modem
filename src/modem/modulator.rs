@@ -2,26 +2,6 @@ extern crate num;
 
 use super::{phasor, digital, carrier, data};
 
-#[derive(Copy, Clone)]
-pub struct Params {
-    // Symbols per second.
-    pub baud_rate: usize,
-    // Samples per second.
-    pub sample_rate: usize,
-    // Samples per symbol.
-    pub samples_per_symbol: usize,
-}
-
-impl Params {
-    pub fn new(br: usize, sr: usize) -> Params {
-        Params {
-            baud_rate: br,
-            sample_rate: sr,
-            samples_per_symbol: sr / br,
-        }
-    }
-}
-
 fn real(i: f64, q: f64, cos: f64, sin: f64) -> f64 {
     i * cos - q * sin
 }

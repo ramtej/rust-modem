@@ -4,7 +4,7 @@ extern crate getopts;
 mod bits;
 mod util;
 
-use modem::{carrier, phasor, freq, modulator, integrator, digital, data};
+use modem::{carrier, phasor, freq, modulator, integrator, digital, data, rates};
 use util::Write16;
 
 const AMPLITUDE: f64 = std::i16::MAX as f64;
@@ -44,7 +44,7 @@ fn main() {
         None => 220,
     };
 
-    let params = modulator::Params::new(br, sr);
+    let rates = rates::Rates::new(br, sr);
     let carrier = carrier::Carrier::new(freq::Freq::new(900, sr));
 
     let phasor: Box<digital::DigitalPhasor> = match dmod.as_ref() {
@@ -56,7 +56,7 @@ fn main() {
         "qam16" => Box::new(digital::QAM::new(4, 0.0, AMPLITUDE)),
         "qam256" => Box::new(digital::QAM::new(8, 0.0, AMPLITUDE)),
         "msk" => Box::new(digital::MSK::new(AMPLITUDE,
-                                            params.samples_per_symbol)),
+                                            rates.samples_per_symbol)),
         "mfsk" => Box::new(digital::MFSK::new(4, freq::Freq::new(50, sr),
             AMPLITUDE, digital::IncreaseMap)),
         "16psk" => Box::new(digital::MPSK::new(4, 0.0, AMPLITUDE)),
@@ -70,16 +70,16 @@ fn main() {
 
     output((&mut preamble)
         .map(|x| x.re)
-        .take(params.samples_per_symbol * 8));
+        .take(rates.samples_per_symbol * 8));
 
     let carrier = preamble.into_carrier();
 
-    let bits = data::Bits::new(bits::BITS, params.samples_per_symbol,
+    let bits = data::Bits::new(bits::BITS, rates.samples_per_symbol,
                                phasor.bits_per_symbol());
     let src: Box<data::Source> = match dmod.as_ref() {
         "msk" | "oqpsk" =>
             Box::new(data::EvenOddOffset::new(bits,
-                params.samples_per_symbol,
+                rates.samples_per_symbol,
                 phasor.bits_per_symbol())),
         _ => Box::new(bits),
     };
