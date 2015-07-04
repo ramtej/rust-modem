@@ -61,6 +61,7 @@ fn main() {
             AMPLITUDE, digital::IncreaseMap)),
         "16psk" => Box::new(digital::MPSK::new(4, 0.0, AMPLITUDE)),
         "oqpsk" => Box::new(digital::OQPSK::new(AMPLITUDE)),
+        "dqpsk" => Box::new(digital::DQPSK::new(AMPLITUDE)),
         _ => panic!("invalid digital modulation"),
     };
 

@@ -401,6 +401,50 @@ impl DigitalPhasor for MPSK {
     }
 }
 
+pub struct DQPSK {
+    amplitude: f64,
+    even: bool,
+}
+
+impl DQPSK {
+    pub fn new(amplitude: f64) -> DQPSK {
+        DQPSK {
+            amplitude: amplitude,
+            even: false,
+        }
+    }
+
+    fn term(&self, symbol: u8) -> f64 {
+        const MAP: [f64; 4] = [
+            0.0,
+            std::f64::consts::PI / 2.0,
+            3.0 * std::f64::consts::PI / 2.0,
+            std::f64::consts::PI,
+        ];
+
+        if self.even {
+            MAP[symbol as usize] + std::f64::consts::PI/4.0
+        } else {
+            MAP[symbol as usize]
+        }
+    }
+}
+
+impl DigitalPhasor for DQPSK {
+    fn bits_per_symbol(&self) -> usize { 2 }
+
+    fn update(&mut self, _: usize, _: &[u8]) {
+        self.even = !self.even;
+    }
+
+    fn i(&self, _: usize, b: &[u8]) -> f64 {
+        self.amplitude * self.term(bytes_to_bits(b)).cos()
+    }
+
+    fn q(&self, _: usize, b: &[u8]) -> f64 {
+        self.amplitude * self.term(bytes_to_bits(b)).sin()
+    }
+}
 
 #[cfg(test)]
 mod test {
