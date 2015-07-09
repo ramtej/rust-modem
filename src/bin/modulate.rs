@@ -1,7 +1,6 @@
 extern crate modem;
 extern crate getopts;
 
-mod bits;
 mod util;
 
 use modem::{carrier, phasor, freq, modulator, integrator, digital, data, rates};
@@ -75,8 +74,8 @@ fn main() {
 
     let carrier = preamble.into_carrier();
 
-    let bits = data::Bits::new(bits::BITS, rates.samples_per_symbol,
-                               phasor.bits_per_symbol());
+    let bits = data::AsciiBits::new(std::io::stdin(), rates.samples_per_symbol,
+                                    phasor.bits_per_symbol());
     let src: Box<data::Source> = match dmod.as_ref() {
         "msk" | "oqpsk" =>
             Box::new(data::EvenOddOffset::new(bits,
