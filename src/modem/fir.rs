@@ -10,7 +10,7 @@ impl<'a> FIRFilter<'a> {
     pub fn new(coefs: &'a [f64]) -> FIRFilter<'a> {
         FIRFilter {
             coefs: coefs,
-            history: (0..coefs.len()).map(|_| 0.0).collect(),
+            history: vec![0.0; coefs.len()],
             idx: 0,
         }
     }
