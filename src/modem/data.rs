@@ -155,18 +155,32 @@ impl<R: std::io::Read> AsciiBits<R> {
         }
     }
 
-    fn read(&mut self) -> bool {
-        // Needs Vec::as_mut_slice to be cleaner, but it's unstable.
-        for el in &mut self.bits {
+    fn next_bit(&mut self) -> Option<u8> {
+        loop {
             let mut buf = [0; 1];
 
             let bit = match self.stream.read(&mut buf) {
                 Ok(1) => buf[0],
-                _ => return false,
+                _ => return None,
             };
 
-            assert!(bit >= b'0' && bit <= b'1');
-            *el = bit - b'0';
+            if (bit as char).is_whitespace() {
+                continue;
+            }
+
+            assert!((bit as char).is_digit(2));
+
+            return Some(bit - b'0');
+        }
+    }
+
+    fn read_bits(&mut self) -> bool {
+        // Needs Vec::as_mut_slice to be cleaner, but it's unstable.
+        for i in 0..self.bits.len() {
+            self.bits[i] = match self.next_bit() {
+                Some(b) => b,
+                None => return false,
+            }
         }
 
         true
@@ -176,7 +190,7 @@ impl<R: std::io::Read> AsciiBits<R> {
 impl<R: std::io::Read> Source for AsciiBits<R> {
     fn update(&mut self, s: usize) -> SourceUpdate {
         if self.clock.update(s) {
-            if self.read() {
+            if self.read_bits() {
                 SourceUpdate::Changed(&self.bits[..])
             } else {
                 SourceUpdate::Finished
@@ -290,16 +304,16 @@ mod test {
 
         {
             let mut f = std::fs::File::create("ascii.bits").unwrap();
-            f.write_all(b"000111").unwrap();
+            f.write_all(b"000\n111").unwrap();
         }
 
         {
             let f = std::fs::File::open("ascii.bits").unwrap();
             let mut a = AsciiBits::new(f, 1, 3);
 
-            assert!(a.read());
-            assert!(a.read());
-            assert!(!a.read());
+            assert!(a.read_bits());
+            assert!(a.read_bits());
+            assert!(!a.read_bits());
         }
 
         {
