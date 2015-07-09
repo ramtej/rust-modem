@@ -138,6 +138,55 @@ impl<D: Source> Source for EvenOddOffset<D> {
     }
 }
 
+pub struct AsciiBits<R: std::io::Read> {
+    stream: R,
+    clock: SymbolClock,
+    bits: Vec<u8>,
+}
+
+impl<R: std::io::Read> AsciiBits<R> {
+    pub fn new(stream: R, samples_per_symbol: usize, bits_per_symbol: usize)
+        -> AsciiBits<R>
+    {
+        AsciiBits {
+            stream: stream,
+            clock: SymbolClock::new(samples_per_symbol),
+            bits: vec![0; bits_per_symbol],
+        }
+    }
+
+    fn read(&mut self) -> bool {
+        // Needs Vec::as_mut_slice to be cleaner, but it's unstable.
+        for el in &mut self.bits {
+            let mut buf = [0; 1];
+
+            let bit = match self.stream.read(&mut buf) {
+                Ok(1) => buf[0],
+                _ => return false,
+            };
+
+            assert!(bit >= b'0' && bit <= b'1');
+            *el = bit - b'0';
+        }
+
+        true
+    }
+}
+
+impl<R: std::io::Read> Source for AsciiBits<R> {
+    fn update(&mut self, s: usize) -> SourceUpdate {
+        if self.clock.update(s) {
+            if self.read() {
+                SourceUpdate::Changed(&self.bits[..])
+            } else {
+                SourceUpdate::Finished
+            }
+        } else {
+            SourceUpdate::Unchanged(&self.bits[..])
+        }
+    }
+}
+
 #[cfg(test)]
 mod test {
     #[test]
@@ -231,5 +280,58 @@ mod test {
             SourceUpdate::Finished => true,
             _ => false,
         });
+    }
+
+    #[test]
+    fn test_ascii() {
+        use std;
+        use std::io::Write;
+        use super::{AsciiBits, SourceUpdate, Source};
+
+        {
+            let mut f = std::fs::File::create("ascii.bits").unwrap();
+            f.write_all(b"000111").unwrap();
+        }
+
+        {
+            let f = std::fs::File::open("ascii.bits").unwrap();
+            let mut a = AsciiBits::new(f, 1, 3);
+
+            assert!(a.read());
+            assert!(a.read());
+            assert!(!a.read());
+        }
+
+        {
+            let f = std::fs::File::open("ascii.bits").unwrap();
+            let mut a = AsciiBits::new(f, 2, 3);
+
+            assert!(match a.update(0) {
+                SourceUpdate::Changed(b) => b == &[0,0,0],
+                _ => false,
+            });
+
+            assert!(match a.update(1) {
+                SourceUpdate::Unchanged(b) => b == &[0,0,0],
+                _ => false,
+            });
+
+            assert!(match a.update(2) {
+                SourceUpdate::Changed(b) => b == &[1,1,1],
+                _ => false,
+            });
+
+            assert!(match a.update(3) {
+                SourceUpdate::Unchanged(b) => b == &[1,1,1],
+                _ => false,
+            });
+
+            assert!(match a.update(4) {
+                SourceUpdate::Finished => true,
+                _ => false,
+            });
+        }
+
+        std::fs::remove_file("ascii.bits").unwrap();
     }
 }
