@@ -1,5 +1,5 @@
 use std;
-use super::{util, freq};
+use super::{util, freq, rates};
 
 pub trait DigitalPhasor {
     fn bits_per_symbol(&self) -> usize;
@@ -360,6 +360,47 @@ impl<M: SymbolMap> DigitalPhasor for MFSK<M> {
 
     fn q(&self, s: usize, _: &[u8]) -> f64 {
         self.amplitude * self.inner(s).sin()
+    }
+}
+
+pub struct CPFSK {
+    bits_per_symbol: usize,
+    freq: f64,
+    amplitude: f64,
+}
+
+impl CPFSK {
+    pub fn new(bits_per_symbol: usize, rates: rates::Rates, amplitude: f64,
+               deviation: usize)
+        -> CPFSK
+    {
+        CPFSK {
+            bits_per_symbol: bits_per_symbol,
+            freq: freq::Freq::new(deviation * rates.baud_rate / 2,
+                                  rates.sample_rate)
+                .sample_freq(),
+            amplitude: amplitude,
+        }
+    }
+
+    fn coef(&self, symbol: u8) -> f64 {
+        2.0 * symbol as f64 - 7.0
+    }
+
+    fn inner(&self, b: &[u8], s: usize) -> f64 {
+        self.coef(bytes_to_bits(b)) * self.freq * s as f64
+    }
+}
+
+impl DigitalPhasor for CPFSK {
+    fn bits_per_symbol(&self) -> usize { self.bits_per_symbol }
+
+    fn i(&self, s: usize, b: &[u8]) -> f64 {
+        self.amplitude * self.inner(b, s).cos()
+    }
+
+    fn q(&self, s: usize, b: &[u8]) -> f64 {
+        self.amplitude * self.inner(b, s).sin()
     }
 }
 
