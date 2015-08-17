@@ -377,8 +377,7 @@ impl CPFSK {
         CPFSK {
             bits_per_symbol: bits_per_symbol,
             freq: freq::Freq::new(deviation * rates.baud_rate / 2,
-                                  rates.sample_rate)
-                .sample_freq(),
+                                  rates.sample_rate).sample_freq(),
             amplitude: amplitude,
         }
     }
