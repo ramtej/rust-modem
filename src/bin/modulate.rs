@@ -8,6 +8,9 @@ use util::Write16;
 
 const AMPLITUDE: f64 = std::i16::MAX as f64;
 
+const USAGE: &'static str = "
+    Modulate the bits on stdin to a waveform on stdout";
+
 fn main() {
     let mut parser = getopts::Options::new();
 
@@ -21,8 +24,7 @@ fn main() {
     let opts = parser.parse(&args).unwrap();
 
     if opts.opt_present("h") {
-        print!("{}", parser.short_usage("modulate"));
-        print!("{}", parser.usage(""));
+        print!("{}\n{}", parser.short_usage("modulate"), parser.usage(USAGE));
         return;
     }
 
