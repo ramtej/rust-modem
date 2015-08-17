@@ -10,6 +10,20 @@ use util::Read16;
 const SAMPLE_RATE: usize = 10000;
 
 fn main() {
+    let mut parser = getopts::Options::new();
+
+    parser.optflag("h", "help", "show usage")
+          .optopt("b", "", "baud rate (symbols/sec)", "RATE");
+
+    let args: Vec<String> = std::env::args().skip(1).collect();
+    let opts = parser.parse(&args).unwrap();
+
+    if opts.opt_present("h") {
+        print!("{}", parser.short_usage("demodulate"));
+        print!("{}", parser.usage(""));
+        return;
+    }
+
     let input = std::io::stdin().iter_16().map(|x| x as f64);
 
     let mut hfir = hilbert();
