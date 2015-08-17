@@ -383,7 +383,7 @@ impl CPFSK {
     }
 
     fn coef(&self, symbol: u8) -> f64 {
-        2.0 * symbol as f64 - 7.0
+        2.0 * symbol as f64
     }
 
     fn inner(&self, b: &[u8], s: usize) -> f64 {
