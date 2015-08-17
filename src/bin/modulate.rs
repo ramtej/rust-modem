@@ -7,6 +7,8 @@ use modem::{carrier, phasor, freq, modulator, integrator, digital, data, rates};
 use util::Write16;
 
 const AMPLITUDE: f64 = std::i16::MAX as f64;
+// The frequency of the carrier.
+const CARRIER_FREQ: usize = 900;
 
 const USAGE: &'static str = "
     Modulate the bits on stdin to a waveform on stdout";
@@ -46,18 +48,16 @@ fn main() {
     };
 
     let rates = rates::Rates::new(br, sr);
-    let carrier = carrier::Carrier::new(freq::Freq::new(900, sr));
+    let carrier = carrier::Carrier::new(freq::Freq::new(CARRIER_FREQ, sr));
 
     let phasor: Box<digital::DigitalPhasor> = match dmod.as_ref() {
         "bask" => Box::new(digital::BASK::new(AMPLITUDE)),
         "bpsk" => Box::new(digital::BPSK::new(std::f64::consts::PI/4.0, AMPLITUDE)),
-        "bfsk" => Box::new(digital::BFSK::new(freq::Freq::new(200, sr),
-                           AMPLITUDE)),
+        "bfsk" => Box::new(digital::BFSK::new(freq::Freq::new(200, sr), AMPLITUDE)),
         "qpsk" => Box::new(digital::QPSK::new(0.0, AMPLITUDE)),
         "qam16" => Box::new(digital::QAM::new(4, 0.0, AMPLITUDE)),
         "qam256" => Box::new(digital::QAM::new(8, 0.0, AMPLITUDE)),
-        "msk" => Box::new(digital::MSK::new(AMPLITUDE,
-                                            rates.samples_per_symbol)),
+        "msk" => Box::new(digital::MSK::new(AMPLITUDE, rates.samples_per_symbol)),
         "mfsk" => Box::new(digital::MFSK::new(4, freq::Freq::new(50, sr),
             AMPLITUDE, digital::IncreaseMap)),
         "16psk" => Box::new(digital::MPSK::new(4, 0.0, AMPLITUDE)),
