@@ -9,6 +9,9 @@ use util::Read16;
 
 const SAMPLE_RATE: usize = 10000;
 
+const USAGE: &'static str = "
+    Demodulate a waveform on stdin to i/q samples on stdout";
+
 fn main() {
     let mut parser = getopts::Options::new();
 
@@ -19,8 +22,7 @@ fn main() {
     let opts = parser.parse(&args).unwrap();
 
     if opts.opt_present("h") {
-        print!("{}", parser.short_usage("demodulate"));
-        print!("{}", parser.usage(""));
+        print!("{}\n{}", parser.short_usage("demodulate"), parser.usage(USAGE));
         return;
     }
 
