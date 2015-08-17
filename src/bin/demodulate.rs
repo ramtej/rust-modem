@@ -37,7 +37,7 @@ fn main() {
     demod.lock_phase();
 
     for (i, q) in demod {
-        println!("  i:{} q:{}", i, q);
+        println!("i:{}\tq:{}", i, q);
     }
 }
 
