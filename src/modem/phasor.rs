@@ -68,13 +68,15 @@ impl<T: Iterator<Item = f64>> Phasor for FM<T> {
 pub struct AM<T: Iterator<Item = f64>> {
     sig: T,
     amplitude: f64,
+    multiplier: f64,
 }
 
 impl<T: Iterator<Item = f64>> AM<T> {
-    pub fn new(sig: T, amplitude: f64) -> AM<T> {
+    pub fn new(sig: T, amplitude: f64, multiplier: f64) -> AM<T> {
         AM {
             sig: sig,
-            amplitude: amplitude,
+            amplitude: amplitude / 2.0,
+            multiplier: multiplier / 2.0
         }
     }
 }
@@ -86,6 +88,6 @@ impl<T: Iterator<Item = f64>> Phasor for AM<T> {
             None => return None,
         };
 
-        Some((self.amplitude * next, 0.0))
+        Some((self.amplitude + self.multiplier * next, 0.0))
     }
 }

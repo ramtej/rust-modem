@@ -98,7 +98,7 @@ fn main() {
                                          freq::Freq::new(1000, sr)))
             },
             "am" => {
-                Box::new(phasor::AM::new(dmodul, std::i16::MAX as f64))
+                Box::new(phasor::AM::new(dmodul, std::i16::MAX as f64, 0.5))
             },
             _ => panic!("invalid analog modulation"),
         };
