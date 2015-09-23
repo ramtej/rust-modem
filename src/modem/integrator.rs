@@ -6,9 +6,7 @@ pub struct Integrator<T: Iterator<Item = f64>> {
 }
 
 impl<T: Iterator<Item = f64>> Integrator<T> {
-    pub fn new(sig: T, amplitude: f64) -> Integrator<T> {
-        // Why?
-        let mut sig = sig;
+    pub fn new(mut sig: T, amplitude: f64) -> Integrator<T> {
         let x = (sig.next().unwrap() / amplitude).acos();
 
         Integrator {
