@@ -13,16 +13,16 @@ const AMPLITUDE: f64 = std::i16::MAX as f64;
 fn main() {
     let mut out = std::io::stdout();
 
-    let c = carrier::Carrier::new(
-        freq::Freq::new(10, SAMPLES_PER_SEC));
+    let modul = modulator::Modulator::new(
+        carrier::Carrier::new(freq::Freq::new(200, SAMPLES_PER_SEC)),
+        Box::new(phasor::Raw::new(1.0))
+    ).map(|x| x.re);
 
-    let p = Box::new(phasor::Raw::new(1.0));
-    let modul = modulator::Modulator::new(c, p).map(|x| x.re);
     let int = integrator::Integrator::new(modul, 1.0);
     let fm = Box::new(phasor::FM::new(int, AMPLITUDE,
-        freq::Freq::new(800, SAMPLES_PER_SEC)));
+        freq::Freq::new(200, SAMPLES_PER_SEC)));
 
-    let fc = carrier::Carrier::new(freq::Freq::new(800, SAMPLES_PER_SEC));
+    let fc = carrier::Carrier::new(freq::Freq::new(1400, SAMPLES_PER_SEC));
     let fmodul = modulator::Modulator::new(fc, fm);
 
     for sample in fmodul {

@@ -6,10 +6,10 @@ mod util;
 use modem::{carrier, phasor, freq, modulator, integrator, digital, data, rates};
 use util::Write16;
 
+// The maximum amplitude of the output waveform.
 const AMPLITUDE: f64 = std::i16::MAX as f64;
-// The frequency of the carrier.
-const CARRIER_FREQ: usize = 900;
 
+// This is a constant here so the multiline string indentation looks a little less awkward.
 const USAGE: &'static str = "
     Modulate the bits on stdin to a waveform on stdout";
 
@@ -30,26 +30,33 @@ fn main() {
         return;
     }
 
+    // The digital modulation to use.
     let dmod = match opts.opt_str("m") {
         Some(s) => s,
         None => panic!("no modulator given"),
     };
 
+    // The analog modulation to use.
     let amod = opts.opt_str("n");
 
+    // The sample rate to use.
     let sr: usize = match opts.opt_str("r") {
         Some(s) => s.parse().unwrap(),
         None => 10000,
     };
 
+    // The baud rate to use.
     let br: usize = match opts.opt_str("b") {
         Some(s) => s.parse().unwrap(),
         None => 220,
     };
 
     let rates = rates::Rates::new(br, sr);
-    let carrier = carrier::Carrier::new(freq::Freq::new(CARRIER_FREQ, sr));
 
+    // The 900Hz carrier frequency is arbitrary but sounds good.
+    let carrier = carrier::Carrier::new(freq::Freq::new(900, sr));
+
+    // Parse the digital modulation into a phasor.
     let phasor: Box<digital::DigitalPhasor> = match dmod.as_ref() {
         "bask" => Box::new(digital::BASK::new(AMPLITUDE)),
         "bpsk" => Box::new(digital::BPSK::new(std::f64::consts::PI/4.0, AMPLITUDE)),
@@ -67,6 +74,7 @@ fn main() {
         _ => panic!("invalid digital modulation"),
     };
 
+    // Generate the initial carrier sync tone.
     let mut preamble = modulator::Modulator::new(carrier,
         Box::new(phasor::Raw::new(AMPLITUDE)));
 
@@ -74,11 +82,14 @@ fn main() {
         .map(|x| x.re)
         .take(rates.samples_per_symbol * 8));
 
+    // Retrieve the carrier back from the preamble.
     let carrier = preamble.into_carrier();
 
+    // Get the user-supplied bits.
     let bits = data::AsciiBits::new(std::io::stdin(), rates.samples_per_symbol,
                                     phasor.bits_per_symbol());
     let src: Box<data::Source> = match dmod.as_ref() {
+        // MSK and OQPSK require an offset bit source
         "msk" | "oqpsk" =>
             Box::new(data::EvenOddOffset::new(bits,
                 rates.samples_per_symbol,
@@ -86,9 +97,11 @@ fn main() {
         _ => Box::new(bits),
     };
 
+    // Create the digital modulator and use only the real part of the signal.
     let dmodul = modulator::DigitalModulator::new(carrier, phasor, src)
         .map(|x| x.re);
 
+    // Wrap the digital modulator in an analog modulator if necessary.
     if let Some(s) = amod {
         let aphasor: Box<phasor::Phasor> = match s.as_ref() {
             "fm" => {
@@ -114,6 +127,7 @@ fn main() {
     };
 }
 
+// Output an iterator of f64 samples to stdout as i16 samples.
 fn output<T: Iterator<Item = f64>>(iter: T) {
     let mut out = std::io::stdout();
 
