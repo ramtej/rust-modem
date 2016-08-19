@@ -42,7 +42,7 @@ impl SymbolClock {
             None
         } else {
             // Ensure the index moved forward and only by one symbol.
-            assert!(idx == self.cur_idx + 1);
+            assert!(idx == self.cur_idx.wrapping_add(1));
 
             Some(idx)
         }

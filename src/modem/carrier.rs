@@ -20,7 +20,7 @@ impl Carrier {
     }
 
     pub fn next(&mut self) -> f32 {
-        self.sample += 1;
+        self.sample = self.sample.wrapping_add(1);
         self.inner(self.sample)
     }
 }
