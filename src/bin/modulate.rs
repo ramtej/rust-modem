@@ -1,13 +1,13 @@
-extern crate modem;
+extern crate byteorder;
 extern crate getopts;
+extern crate modem;
 
-mod util;
+use byteorder::{LittleEndian, WriteBytesExt};
 
 use modem::{carrier, phasor, freq, modulator, integrator, digital, data, rates};
-use util::Write16;
 
 // The maximum amplitude of the output waveform.
-const AMPLITUDE: f32 = std::i16::MAX as f32;
+const AMPLITUDE: f32 = 1.0;
 
 // This is a constant here so the multiline string indentation looks a little less awkward.
 const USAGE: &'static str = "
@@ -132,6 +132,6 @@ fn output<T: Iterator<Item = f32>>(iter: T) {
     let mut out = std::io::stdout();
 
     for sample in iter {
-        out.write_i16(sample as i16).unwrap();
+        out.write_f32::<LittleEndian>(sample).unwrap();
     }
 }

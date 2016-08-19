@@ -2,9 +2,15 @@
 name = "modem"
 version = "0.0.1"
 dependencies = [
+ "byteorder 0.5.3 (registry+https://github.com/rust-lang/crates.io-index)",
  "getopts 0.2.14 (registry+https://github.com/rust-lang/crates.io-index)",
  "num 0.1.35 (registry+https://github.com/rust-lang/crates.io-index)",
 ]
+
+[[package]]
+name = "byteorder"
+version = "0.5.3"
+source = "registry+https://github.com/rust-lang/crates.io-index"
 
 [[package]]
 name = "getopts"
@@ -96,6 +102,7 @@ version = "0.3.19"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 
 [metadata]
+"checksum byteorder 0.5.3 (registry+https://github.com/rust-lang/crates.io-index)" = "0fc10e8cc6b2580fda3f36eb6dc5316657f812a3df879a44a66fc9f0fdbc4855"
 "checksum getopts 0.2.14 (registry+https://github.com/rust-lang/crates.io-index)" = "d9047cfbd08a437050b363d35ef160452c5fe8ea5187ae0a624708c91581d685"
 "checksum libc 0.2.15 (registry+https://github.com/rust-lang/crates.io-index)" = "23e3757828fa702a20072c37ff47938e9dd331b92fac6e223d26d4b7a55f7ee2"
 "checksum num 0.1.35 (registry+https://github.com/rust-lang/crates.io-index)" = "5a9699207fab8b02bd0e56f8f06fee3f26d640303130de548898b4c9704f6d01"

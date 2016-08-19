@@ -1,14 +1,14 @@
+extern crate byteorder;
 extern crate modem;
 
-mod util;
+use byteorder::{LittleEndian, WriteBytesExt};
 
 use modem::{carrier, freq, modulator, integrator, phasor};
-use util::Write16;
 
 // Samples per second.
 const SAMPLES_PER_SEC: usize = 10000;
 // Amplitude for the signal.
-const AMPLITUDE: f32 = std::i16::MAX as f32;
+const AMPLITUDE: f32 = 1.0;
 
 fn main() {
     let mut out = std::io::stdout();
@@ -26,6 +26,6 @@ fn main() {
     let fmodul = modulator::Modulator::new(fc, fm);
 
     for sample in fmodul {
-        out.write_i16(sample.re as i16).unwrap();
+        out.write_f32::<LittleEndian>(sample.re).unwrap();
     }
 }

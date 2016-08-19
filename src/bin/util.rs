@@ -1,9 +1,5 @@
 use std;
 
-pub trait Write16 {
-    fn write_i16(&mut self, n: i16) -> std::io::Result<usize>;
-}
-
 pub trait Read16 {
     fn read_i16(&mut self) -> std::io::Result<i16>;
 
@@ -11,13 +7,6 @@ pub trait Read16 {
         where Self: Sized
     {
         Iter16(self)
-    }
-}
-
-impl<W> Write16 for W where W: std::io::Write {
-    fn write_i16(&mut self, n: i16) -> std::io::Result<usize> {
-        let buf: [u8; 2] = unsafe { std::mem::transmute(n) };
-        self.write(&buf)
     }
 }
 

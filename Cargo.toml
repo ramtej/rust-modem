@@ -6,6 +6,7 @@ authors = ["Mick Koch <mick@kochm.co>"]
 [dependencies]
 getopts = "^0.2.14"
 num = "^0.1.35"
+byteorder = "^0.5.3"
 
 [lib]
 name = "modem"
