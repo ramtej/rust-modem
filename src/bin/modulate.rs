@@ -7,7 +7,7 @@ use modem::{carrier, phasor, freq, modulator, integrator, digital, data, rates};
 use util::Write16;
 
 // The maximum amplitude of the output waveform.
-const AMPLITUDE: f64 = std::i16::MAX as f64;
+const AMPLITUDE: f32 = std::i16::MAX as f32;
 
 // This is a constant here so the multiline string indentation looks a little less awkward.
 const USAGE: &'static str = "
@@ -59,7 +59,7 @@ fn main() {
     // Parse the digital modulation into a phasor.
     let phasor: Box<digital::DigitalPhasor> = match dmod.as_ref() {
         "bask" => Box::new(digital::BASK::new(AMPLITUDE)),
-        "bpsk" => Box::new(digital::BPSK::new(std::f64::consts::PI/4.0, AMPLITUDE)),
+        "bpsk" => Box::new(digital::BPSK::new(std::f32::consts::PI/4.0, AMPLITUDE)),
         "bfsk" => Box::new(digital::BFSK::new(freq::Freq::new(200, sr), AMPLITUDE)),
         "qpsk" => Box::new(digital::QPSK::new(0.0, AMPLITUDE)),
         "qam16" => Box::new(digital::QAM::new(4, 0.0, AMPLITUDE)),
@@ -107,11 +107,11 @@ fn main() {
             "fm" => {
                 let int = integrator::Integrator::new(dmodul, AMPLITUDE);
 
-                Box::new(phasor::FM::new(int, std::i16::MAX as f64,
+                Box::new(phasor::FM::new(int, std::i16::MAX as f32,
                                          freq::Freq::new(1000, sr)))
             },
             "am" => {
-                Box::new(phasor::AM::new(dmodul, std::i16::MAX as f64, 0.5))
+                Box::new(phasor::AM::new(dmodul, std::i16::MAX as f32, 0.5))
             },
             _ => panic!("invalid analog modulation"),
         };
@@ -127,8 +127,8 @@ fn main() {
     };
 }
 
-// Output an iterator of f64 samples to stdout as i16 samples.
-fn output<T: Iterator<Item = f64>>(iter: T) {
+// Output an iterator of f32 samples to stdout as i16 samples.
+fn output<T: Iterator<Item = f32>>(iter: T) {
     let mut out = std::io::stdout();
 
     for sample in iter {

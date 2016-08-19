@@ -26,7 +26,7 @@ fn main() {
         return;
     }
 
-    let input = std::io::stdin().iter_16().map(|x| x as f64);
+    let input = std::io::stdin().iter_16().map(|x| x as f32);
 
     let mut hfir = hilbert();
     let analytic = Box::new(input.map(move |x| {
@@ -45,7 +45,7 @@ fn main() {
 
 // Create a Hilbert transform FIR filter. Generated with matlab.
 pub fn hilbert() -> fir::FIRFilter<'static> {
-    const COEFS: &'static [f64] = &[
+    const COEFS: &'static [f32] = &[
         -0.007576,
         -2.803e-16,
         -0.019824,
@@ -79,7 +79,7 @@ pub fn hilbert() -> fir::FIRFilter<'static> {
 //   stopband: 1500 to 5000Hz
 // Assuming a 10,000Hz sample rate. Generated with matlab.
 pub fn lowpass() -> fir::FIRFilter<'static> {
-    const COEFS: &'static [f64] = &[
+    const COEFS: &'static [f32] = &[
         8.6464950643449706e-05,
         -0.0011227727551926443,
         -0.0010137373532784653,

@@ -6,16 +6,16 @@ pub trait DigitalPhasor {
 
     fn update(&mut self, _s: usize, _b: &[u8]) {}
 
-    fn i(&self, s: usize, b: &[u8]) -> f64;
-    fn q(&self, s: usize, b: &[u8]) -> f64;
+    fn i(&self, s: usize, b: &[u8]) -> f32;
+    fn q(&self, s: usize, b: &[u8]) -> f32;
 
-    fn next(&self, s: usize, b: &[u8]) -> (f64, f64) {
+    fn next(&self, s: usize, b: &[u8]) -> (f32, f32) {
         (self.i(s, b), self.q(s, b))
     }
 }
 
-fn bit_to_sign(b: u8) -> f64 {
-    (2 * b as i8 - 1) as f64
+fn bit_to_sign(b: u8) -> f32 {
+    (2 * b as i8 - 1) as f32
 }
 
 fn bytes_to_bits(bytes: &[u8]) -> u8 {
@@ -31,19 +31,19 @@ fn max_symbol(bits_per_symbol: usize) -> usize {
 }
 
 pub struct BPSK {
-    phase: f64,
-    amplitude: f64,
+    phase: f32,
+    amplitude: f32,
 }
 
 impl BPSK {
-    pub fn new(phase: f64, amplitude: f64) -> BPSK {
+    pub fn new(phase: f32, amplitude: f32) -> BPSK {
         BPSK {
             phase: phase,
             amplitude: amplitude,
         }
     }
 
-    fn common(&self, b: u8) -> f64 {
+    fn common(&self, b: u8) -> f32 {
         bit_to_sign(b) * self.amplitude
     }
 }
@@ -51,21 +51,21 @@ impl BPSK {
 impl DigitalPhasor for BPSK {
     fn bits_per_symbol(&self) -> usize { 1 }
 
-    fn i(&self, _: usize, b: &[u8]) -> f64 {
+    fn i(&self, _: usize, b: &[u8]) -> f32 {
         self.common(b[0]) * self.phase.cos()
     }
 
-    fn q(&self, _: usize, b: &[u8]) -> f64 {
+    fn q(&self, _: usize, b: &[u8]) -> f32 {
         self.common(b[0]) * self.phase.sin()
     }
 }
 
 pub struct BASK {
-    amplitude: f64,
+    amplitude: f32,
 }
 
 impl BASK {
-    pub fn new(a: f64) -> BASK {
+    pub fn new(a: f32) -> BASK {
         BASK {
             amplitude: a,
         }
@@ -75,24 +75,24 @@ impl BASK {
 impl DigitalPhasor for BASK {
     fn bits_per_symbol(&self) -> usize { 1 }
 
-    fn i(&self, _: usize, b: &[u8]) -> f64 {
-        b[0] as f64 * self.amplitude
+    fn i(&self, _: usize, b: &[u8]) -> f32 {
+        b[0] as f32 * self.amplitude
     }
 
-    fn q(&self, _: usize, _: &[u8]) -> f64 {
+    fn q(&self, _: usize, _: &[u8]) -> f32 {
         0.0
     }
 }
 
 pub struct BFSK {
-    deviation: f64,
-    amplitude: f64,
-    phase: f64,
+    deviation: f32,
+    amplitude: f32,
+    phase: f32,
     prev: u8,
 }
 
 impl BFSK {
-    pub fn new(d: freq::Freq, a: f64) -> BFSK {
+    pub fn new(d: freq::Freq, a: f32) -> BFSK {
         BFSK {
             deviation: d.sample_freq(),
             amplitude: a,
@@ -101,23 +101,23 @@ impl BFSK {
         }
     }
 
-    fn inner(&self, s: usize, b: u8) -> f64 {
+    fn inner(&self, s: usize, b: u8) -> f32 {
         self.rads(s, b) + self.phase
     }
 
-    fn rads(&self, s: usize, b: u8) -> f64 {
-        b as f64 * self.deviation * s as f64
+    fn rads(&self, s: usize, b: u8) -> f32 {
+        b as f32 * self.deviation * s as f32
     }
 }
 
 impl DigitalPhasor for BFSK {
     fn bits_per_symbol(&self) -> usize { 1 }
 
-    fn i(&self, s: usize, b: &[u8]) -> f64 {
+    fn i(&self, s: usize, b: &[u8]) -> f32 {
         self.amplitude * self.inner(s, b[0]).cos()
     }
 
-    fn q(&self, s: usize, b: &[u8]) -> f64 {
+    fn q(&self, s: usize, b: &[u8]) -> f32 {
         self.amplitude * self.inner(s, b[0]).sin()
     }
 
@@ -137,17 +137,17 @@ impl DigitalPhasor for BFSK {
 }
 
 pub struct QPSK {
-    phase_cos: f64,
-    phase_sin: f64,
-    amplitude: f64,
+    phase_cos: f32,
+    phase_sin: f32,
+    amplitude: f32,
 }
 
 impl QPSK {
-    pub fn new(phase: f64, amplitude: f64) -> QPSK {
+    pub fn new(phase: f32, amplitude: f32) -> QPSK {
         QPSK {
             phase_cos: phase.cos(),
             phase_sin: phase.sin(),
-            amplitude: amplitude * 0.5f64.sqrt(),
+            amplitude: amplitude * 0.5f32.sqrt(),
         }
     }
 }
@@ -155,17 +155,17 @@ impl QPSK {
 impl DigitalPhasor for QPSK {
     fn bits_per_symbol(&self) -> usize { 2 }
 
-    fn i(&self, _: usize, b: &[u8]) -> f64 {
+    fn i(&self, _: usize, b: &[u8]) -> f32 {
         self.amplitude * (
-            bit_to_sign(b[0]) as f64 * self.phase_cos -
-            bit_to_sign(b[1]) as f64 * self.phase_sin
+            bit_to_sign(b[0]) as f32 * self.phase_cos -
+            bit_to_sign(b[1]) as f32 * self.phase_sin
         )
     }
 
-    fn q(&self, _: usize, b: &[u8]) -> f64 {
+    fn q(&self, _: usize, b: &[u8]) -> f32 {
         self.amplitude * (
-            bit_to_sign(b[1]) as f64 * self.phase_cos +
-            bit_to_sign(b[0]) as f64 * self.phase_sin
+            bit_to_sign(b[1]) as f32 * self.phase_cos +
+            bit_to_sign(b[0]) as f32 * self.phase_sin
         )
     }
 }
@@ -174,19 +174,19 @@ pub struct QAM {
     bits_per_symbol: usize,
     // Number of bits per carrier.
     carrier_size: usize,
-    max_symbol: f64,
-    phase_cos: f64,
-    phase_sin: f64,
-    amplitude: f64,
+    max_symbol: f32,
+    phase_cos: f32,
+    phase_sin: f32,
+    amplitude: f32,
 }
 
 impl QAM {
-    pub fn new(bits_per_symbol: usize, phase: f64, amplitude: f64) -> QAM {
+    pub fn new(bits_per_symbol: usize, phase: f32, amplitude: f32) -> QAM {
         // Must have a bit for i and a bit for q.
         assert!(bits_per_symbol > 1);
 
         let cs = bits_per_symbol / 2;
-        let ms = max_symbol(cs) as f64;
+        let ms = max_symbol(cs) as f32;
 
         QAM {
             bits_per_symbol: bits_per_symbol,
@@ -198,11 +198,11 @@ impl QAM {
         }
     }
 
-    fn pos_symbol(&self, s: u8) -> f64 {
-        2.0 * s as f64 - self.max_symbol
+    fn pos_symbol(&self, s: u8) -> f32 {
+        2.0 * s as f32 - self.max_symbol
     }
 
-    fn pos_bytes(&self, b: &[u8]) -> f64 {
+    fn pos_bytes(&self, b: &[u8]) -> f32 {
         self.pos_symbol(bytes_to_bits(b))
     }
 }
@@ -210,7 +210,7 @@ impl QAM {
 impl DigitalPhasor for QAM {
     fn bits_per_symbol(&self) -> usize { self.bits_per_symbol }
 
-    fn i(&self, _: usize, b: &[u8]) -> f64 {
+    fn i(&self, _: usize, b: &[u8]) -> f32 {
         let (msb, lsb) = b.split_at(self.carrier_size);
 
         self.amplitude * (
@@ -219,7 +219,7 @@ impl DigitalPhasor for QAM {
         )
     }
 
-    fn q(&self, _: usize, b: &[u8]) -> f64 {
+    fn q(&self, _: usize, b: &[u8]) -> f32 {
         let (msb, lsb) = b.split_at(self.carrier_size);
 
         self.amplitude * (
@@ -230,44 +230,44 @@ impl DigitalPhasor for QAM {
 }
 
 pub struct MSK {
-    amplitude: f64,
-    samples_per_bit: f64,
+    amplitude: f32,
+    samples_per_bit: f32,
 }
 
 impl MSK {
-    pub fn new(amplitude: f64, samples_per_symbol: usize) -> MSK {
+    pub fn new(amplitude: f32, samples_per_symbol: usize) -> MSK {
         MSK {
             amplitude: amplitude,
-            samples_per_bit: samples_per_symbol as f64 / 2.0,
+            samples_per_bit: samples_per_symbol as f32 / 2.0,
         }
     }
 
-    fn inner(&self, s: usize) -> f64 {
-        std::f64::consts::PI/2.0 * s as f64 / self.samples_per_bit -
-            std::f64::consts::PI/2.0
+    fn inner(&self, s: usize) -> f32 {
+        std::f32::consts::PI/2.0 * s as f32 / self.samples_per_bit -
+            std::f32::consts::PI/2.0
     }
 }
 
 impl DigitalPhasor for MSK {
     fn bits_per_symbol(&self) -> usize { 2 }
 
-    fn i(&self, s: usize, b: &[u8]) -> f64 {
+    fn i(&self, s: usize, b: &[u8]) -> f32 {
         self.amplitude * bit_to_sign(b[0]) * self.inner(s).cos()
     }
 
-    fn q(&self, s: usize, b: &[u8]) -> f64 {
+    fn q(&self, s: usize, b: &[u8]) -> f32 {
         self.amplitude * bit_to_sign(b[1]) * self.inner(s).sin()
     }
 }
 
 pub struct OQPSK {
-    amplitude: f64,
+    amplitude: f32,
 }
 
 impl OQPSK {
-    pub fn new(amplitude: f64) -> OQPSK {
+    pub fn new(amplitude: f32) -> OQPSK {
         OQPSK {
-            amplitude: amplitude * 0.5f64.sqrt(),
+            amplitude: amplitude * 0.5f32.sqrt(),
         }
     }
 }
@@ -275,17 +275,17 @@ impl OQPSK {
 impl DigitalPhasor for OQPSK {
     fn bits_per_symbol(&self) -> usize { 2 }
 
-    fn i(&self, _: usize, b: &[u8]) -> f64 {
+    fn i(&self, _: usize, b: &[u8]) -> f32 {
         bit_to_sign(b[0]) * self.amplitude
     }
 
-    fn q(&self, _: usize, b: &[u8]) -> f64 {
+    fn q(&self, _: usize, b: &[u8]) -> f32 {
         bit_to_sign(b[1]) * self.amplitude
     }
 }
 
 pub trait SymbolMap {
-    fn coef(&self, symbol: u8) -> f64;
+    fn coef(&self, symbol: u8) -> f32;
 }
 
 pub struct DefaultMap {
@@ -301,30 +301,30 @@ impl DefaultMap {
 }
 
 impl SymbolMap for DefaultMap {
-    fn coef(&self, symbol: u8) -> f64 {
-        (2 * symbol as i32 - self.max_symbol) as f64
+    fn coef(&self, symbol: u8) -> f32 {
+        (2 * symbol as i32 - self.max_symbol) as f32
     }
 }
 
 pub struct IncreaseMap;
 
 impl SymbolMap for IncreaseMap {
-    fn coef(&self, symbol: u8) -> f64 {
-        (2 * symbol) as f64
+    fn coef(&self, symbol: u8) -> f32 {
+        (2 * symbol) as f32
     }
 }
 
 pub struct MFSK<M: SymbolMap> {
     bits_per_symbol: usize,
-    deviation: f64,
-    amplitude: f64,
+    deviation: f32,
+    amplitude: f32,
     map: M,
-    phase_offset: f64,
-    cur_coef: f64,
+    phase_offset: f32,
+    cur_coef: f32,
 }
 
 impl<M: SymbolMap> MFSK<M> {
-    pub fn new(bits_per_symbol: usize, deviation: freq::Freq, amplitude: f64, map: M)
+    pub fn new(bits_per_symbol: usize, deviation: freq::Freq, amplitude: f32, map: M)
         -> MFSK<M>
     {
         MFSK {
@@ -337,8 +337,8 @@ impl<M: SymbolMap> MFSK<M> {
         }
     }
 
-    fn inner(&self, s: usize) -> f64 {
-        self.cur_coef * self.deviation * s as f64 + self.phase_offset
+    fn inner(&self, s: usize) -> f32 {
+        self.cur_coef * self.deviation * s as f32 + self.phase_offset
     }
 }
 
@@ -348,29 +348,29 @@ impl<M: SymbolMap> DigitalPhasor for MFSK<M> {
     fn update(&mut self, s: usize, b: &[u8]) {
         let next_coef = self.map.coef(bytes_to_bits(b));
 
-        self.phase_offset += (self.cur_coef - next_coef) * self.deviation * s as f64;
+        self.phase_offset += (self.cur_coef - next_coef) * self.deviation * s as f32;
         self.phase_offset = util::mod_trig(self.phase_offset);
 
         self.cur_coef = next_coef;
     }
 
-    fn i(&self, s: usize, _: &[u8]) -> f64 {
+    fn i(&self, s: usize, _: &[u8]) -> f32 {
         self.amplitude * self.inner(s).cos()
     }
 
-    fn q(&self, s: usize, _: &[u8]) -> f64 {
+    fn q(&self, s: usize, _: &[u8]) -> f32 {
         self.amplitude * self.inner(s).sin()
     }
 }
 
 pub struct CPFSK {
     bits_per_symbol: usize,
-    freq: f64,
-    amplitude: f64,
+    freq: f32,
+    amplitude: f32,
 }
 
 impl CPFSK {
-    pub fn new(bits_per_symbol: usize, rates: rates::Rates, amplitude: f64,
+    pub fn new(bits_per_symbol: usize, rates: rates::Rates, amplitude: f32,
                deviation: usize)
         -> CPFSK
     {
@@ -382,88 +382,88 @@ impl CPFSK {
         }
     }
 
-    fn coef(&self, symbol: u8) -> f64 {
-        2.0 * symbol as f64
+    fn coef(&self, symbol: u8) -> f32 {
+        2.0 * symbol as f32
     }
 
-    fn inner(&self, b: &[u8], s: usize) -> f64 {
-        self.coef(bytes_to_bits(b)) * self.freq * s as f64
+    fn inner(&self, b: &[u8], s: usize) -> f32 {
+        self.coef(bytes_to_bits(b)) * self.freq * s as f32
     }
 }
 
 impl DigitalPhasor for CPFSK {
     fn bits_per_symbol(&self) -> usize { self.bits_per_symbol }
 
-    fn i(&self, s: usize, b: &[u8]) -> f64 {
+    fn i(&self, s: usize, b: &[u8]) -> f32 {
         self.amplitude * self.inner(b, s).cos()
     }
 
-    fn q(&self, s: usize, b: &[u8]) -> f64 {
+    fn q(&self, s: usize, b: &[u8]) -> f32 {
         self.amplitude * self.inner(b, s).sin()
     }
 }
 
 pub struct MPSK {
     bits_per_symbol: usize,
-    num_symbols: f64,
-    amplitude: f64,
-    phase_offset: f64,
+    num_symbols: f32,
+    amplitude: f32,
+    phase_offset: f32,
 }
 
 impl MPSK {
-    pub fn new(bits_per_symbol: usize, phase_offset: f64, amplitude: f64) -> MPSK {
+    pub fn new(bits_per_symbol: usize, phase_offset: f32, amplitude: f32) -> MPSK {
         MPSK {
             bits_per_symbol: bits_per_symbol,
-            num_symbols: (1 << bits_per_symbol) as f64,
+            num_symbols: (1 << bits_per_symbol) as f32,
             amplitude: amplitude,
             phase_offset: phase_offset,
         }
     }
 
-    fn inner(&self, b: &[u8]) -> f64 {
+    fn inner(&self, b: &[u8]) -> f32 {
         self.phase(b) + self.phase_offset
     }
 
-    fn phase(&self, b: &[u8]) -> f64 {
-        2.0 * std::f64::consts::PI * bytes_to_bits(b) as f64 / self.num_symbols
+    fn phase(&self, b: &[u8]) -> f32 {
+        2.0 * std::f32::consts::PI * bytes_to_bits(b) as f32 / self.num_symbols
     }
 }
 
 impl DigitalPhasor for MPSK {
     fn bits_per_symbol(&self) -> usize { self.bits_per_symbol }
 
-    fn i(&self, _: usize, b: &[u8]) -> f64 {
+    fn i(&self, _: usize, b: &[u8]) -> f32 {
         self.amplitude * self.inner(b).cos()
     }
 
-    fn q(&self, _: usize, b: &[u8]) -> f64 {
+    fn q(&self, _: usize, b: &[u8]) -> f32 {
         self.amplitude * self.inner(b).sin()
     }
 }
 
 pub struct DQPSK {
-    amplitude: f64,
+    amplitude: f32,
     even: bool,
 }
 
 impl DQPSK {
-    pub fn new(amplitude: f64) -> DQPSK {
+    pub fn new(amplitude: f32) -> DQPSK {
         DQPSK {
             amplitude: amplitude,
             even: false,
         }
     }
 
-    fn term(&self, symbol: u8) -> f64 {
-        const MAP: [f64; 4] = [
+    fn term(&self, symbol: u8) -> f32 {
+        const MAP: [f32; 4] = [
             0.0,
-            std::f64::consts::PI / 2.0,
-            3.0 * std::f64::consts::PI / 2.0,
-            std::f64::consts::PI,
+            std::f32::consts::PI / 2.0,
+            3.0 * std::f32::consts::PI / 2.0,
+            std::f32::consts::PI,
         ];
 
         if self.even {
-            MAP[symbol as usize] + std::f64::consts::PI/4.0
+            MAP[symbol as usize] + std::f32::consts::PI/4.0
         } else {
             MAP[symbol as usize]
         }
@@ -477,11 +477,11 @@ impl DigitalPhasor for DQPSK {
         self.even = !self.even;
     }
 
-    fn i(&self, _: usize, b: &[u8]) -> f64 {
+    fn i(&self, _: usize, b: &[u8]) -> f32 {
         self.amplitude * self.term(bytes_to_bits(b)).cos()
     }
 
-    fn q(&self, _: usize, b: &[u8]) -> f64 {
+    fn q(&self, _: usize, b: &[u8]) -> f32 {
         self.amplitude * self.term(bytes_to_bits(b)).sin()
     }
 }
@@ -525,7 +525,7 @@ mod test {
     #[test]
     fn test_mpsk() {
         use super::{MPSK, DigitalPhasor};
-        use std::f64::consts::PI;
+        use std::f32::consts::PI;
 
         let mpsk = MPSK::new(2, 0.0, 1.0);
         assert_eq!(mpsk.i(0, &[0, 0]), 1.0);

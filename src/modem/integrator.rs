@@ -1,12 +1,12 @@
-pub struct Integrator<T: Iterator<Item = f64>> {
+pub struct Integrator<T: Iterator<Item = f32>> {
     sig: T,
-    amplitude: f64,
-    prev: f64,
-    accum: f64,
+    amplitude: f32,
+    prev: f32,
+    accum: f32,
 }
 
-impl<T: Iterator<Item = f64>> Integrator<T> {
-    pub fn new(mut sig: T, amplitude: f64) -> Integrator<T> {
+impl<T: Iterator<Item = f32>> Integrator<T> {
+    pub fn new(mut sig: T, amplitude: f32) -> Integrator<T> {
         let x = (sig.next().unwrap() / amplitude).acos();
 
         Integrator {
@@ -18,10 +18,10 @@ impl<T: Iterator<Item = f64>> Integrator<T> {
     }
 }
 
-impl<T: Iterator<Item = f64>> Iterator for Integrator<T> {
-    type Item = f64;
+impl<T: Iterator<Item = f32>> Iterator for Integrator<T> {
+    type Item = f32;
 
-    fn next(&mut self) -> Option<f64> {
+    fn next(&mut self) -> Option<f32> {
         let next = match self.sig.next() {
             None => return None,
             Some(s) => s,

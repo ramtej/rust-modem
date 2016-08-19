@@ -1,13 +1,13 @@
 use std::cmp;
 
 pub struct FIRFilter<'a> {
-    coefs: &'a [f64],
-    history: Vec<f64>,
+    coefs: &'a [f32],
+    history: Vec<f32>,
     idx: usize,
 }
 
 impl<'a> FIRFilter<'a> {
-    pub fn new(coefs: &'a [f64]) -> FIRFilter<'a> {
+    pub fn new(coefs: &'a [f32]) -> FIRFilter<'a> {
         FIRFilter {
             coefs: coefs,
             history: vec![0.0; coefs.len()],
@@ -15,7 +15,7 @@ impl<'a> FIRFilter<'a> {
         }
     }
 
-    fn calc(&self) -> f64 {
+    fn calc(&self) -> f32 {
         let mut cur = self.idx;
 
         self.coefs.iter().fold(0.0, |s, &coef| {
@@ -24,7 +24,7 @@ impl<'a> FIRFilter<'a> {
         })
     }
 
-    pub fn add(&mut self, sample: f64) -> f64 {
+    pub fn add(&mut self, sample: f32) -> f32 {
         self.history[self.idx] = sample;
 
         self.idx += 1;

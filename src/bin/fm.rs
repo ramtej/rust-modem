@@ -8,7 +8,7 @@ use util::Write16;
 // Samples per second.
 const SAMPLES_PER_SEC: usize = 10000;
 // Amplitude for the signal.
-const AMPLITUDE: f64 = std::i16::MAX as f64;
+const AMPLITUDE: f32 = std::i16::MAX as f32;
 
 fn main() {
     let mut out = std::io::stdout();

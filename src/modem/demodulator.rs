@@ -5,7 +5,7 @@ use super::{carrier, pll, fir};
 const LOCK_SAMPLES: usize = 64;
 
 pub struct Demodulator<'a, S>
-    where S: Iterator<Item = num::Complex<f64>>
+    where S: Iterator<Item = num::Complex<f32>>
 {
     carrier: carrier::Carrier,
     sig: S,
@@ -15,7 +15,7 @@ pub struct Demodulator<'a, S>
 }
 
 impl<'a, S> Demodulator<'a, S>
-    where S: Iterator<Item = num::Complex<f64>>
+    where S: Iterator<Item = num::Complex<f32>>
 {
     pub fn new<F>(carrier: carrier::Carrier, sig: S, lp: F) -> Demodulator<'a, S>
         where F: Fn() -> fir::FIRFilter<'a>
@@ -37,11 +37,11 @@ impl<'a, S> Demodulator<'a, S>
 }
 
 impl<'a, S> Iterator for Demodulator<'a, S>
-    where S: Iterator<Item = num::Complex<f64>>
+    where S: Iterator<Item = num::Complex<f32>>
 {
-    type Item = (f64, f64);
+    type Item = (f32, f32);
 
-    fn next(&mut self) -> Option<(f64, f64)> {
+    fn next(&mut self) -> Option<(f32, f32)> {
         let x = match self.sig.next() {
             Some(x) => x.re,
             None => return None,

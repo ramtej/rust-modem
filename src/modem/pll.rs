@@ -1,9 +1,9 @@
 extern crate num;
 
-const CHANGE: f64 = 0.447214;
+const CHANGE: f32 = 0.447214;
 
 pub struct PLL {
-    pub phase_offset: f64,
+    pub phase_offset: f32,
 }
 
 impl PLL {
@@ -13,7 +13,7 @@ impl PLL {
         }
     }
 
-    pub fn handle(&mut self, carrier_phase: f64, x: num::Complex<f64>) {
+    pub fn handle(&mut self, carrier_phase: f32, x: num::Complex<f32>) {
         let inner = carrier_phase + self.phase_offset;
         let carrier = num::Complex::new(inner.cos(), inner.sin());
         let err = (x * carrier.conj()).arg();

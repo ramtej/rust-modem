@@ -2,11 +2,11 @@ extern crate num;
 
 use super::{phasor, digital, carrier, data};
 
-fn real(i: f64, q: f64, cos: f64, sin: f64) -> f64 {
+fn real(i: f32, q: f32, cos: f32, sin: f32) -> f32 {
     i * cos - q * sin
 }
 
-fn imag(i: f64, q: f64, cos: f64, sin: f64) -> f64 {
+fn imag(i: f32, q: f32, cos: f32, sin: f32) -> f32 {
     i * sin + q * cos
 }
 
@@ -27,7 +27,7 @@ impl Modulator {
 }
 
 impl Iterator for Modulator {
-    type Item = num::Complex<f64>;
+    type Item = num::Complex<f32>;
 
     fn next(&mut self) -> Option<Self::Item> {
         let phase = self.carrier.next();
@@ -68,7 +68,7 @@ impl DigitalModulator {
 }
 
 impl Iterator for DigitalModulator {
-    type Item = num::Complex<f64>;
+    type Item = num::Complex<f32>;
 
     fn next(&mut self) -> Option<Self::Item> {
         let phase = self.carrier.next();

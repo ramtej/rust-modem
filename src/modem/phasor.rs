@@ -1,38 +1,38 @@
 use super::{freq, integrator};
 
 pub trait Phasor {
-    fn next(&mut self, s: usize) -> Option<(f64, f64)>;
+    fn next(&mut self, s: usize) -> Option<(f32, f32)>;
 }
 
 pub struct Raw {
-    amplitude: f64,
+    amplitude: f32,
 }
 
 impl Raw {
-    pub fn new(amplitude: f64) -> Raw {
+    pub fn new(amplitude: f32) -> Raw {
         Raw {
             amplitude: amplitude,
         }
     }
 
-    fn i(&self) -> f64 { self.amplitude }
-    fn q(&self) -> f64 { 0.0 }
+    fn i(&self) -> f32 { self.amplitude }
+    fn q(&self) -> f32 { 0.0 }
 }
 
 impl Phasor for Raw {
-    fn next(&mut self, _: usize) -> Option<(f64, f64)> {
+    fn next(&mut self, _: usize) -> Option<(f32, f32)> {
         Some((self.i(), self.q()))
     }
 }
 
-pub struct FM<T: Iterator<Item = f64>> {
+pub struct FM<T: Iterator<Item = f32>> {
     integ: integrator::Integrator<T>,
-    amplitude: f64,
-    deviation: f64,
+    amplitude: f32,
+    deviation: f32,
 }
 
-impl<T: Iterator<Item = f64>> FM<T> {
-    pub fn new(integ: integrator::Integrator<T>, amplitude: f64,
+impl<T: Iterator<Item = f32>> FM<T> {
+    pub fn new(integ: integrator::Integrator<T>, amplitude: f32,
                deviation: freq::Freq)
         -> FM<T>
     {
@@ -43,17 +43,17 @@ impl<T: Iterator<Item = f64>> FM<T> {
         }
     }
 
-    fn i(&self, inner: f64) -> f64 {
+    fn i(&self, inner: f32) -> f32 {
         self.amplitude * inner.cos()
     }
 
-    fn q(&self, inner: f64) -> f64 {
+    fn q(&self, inner: f32) -> f32 {
         self.amplitude * inner.sin()
     }
 }
 
-impl<T: Iterator<Item = f64>> Phasor for FM<T> {
-    fn next(&mut self, _: usize) -> Option<(f64, f64)> {
+impl<T: Iterator<Item = f32>> Phasor for FM<T> {
+    fn next(&mut self, _: usize) -> Option<(f32, f32)> {
         let next = match self.integ.next() {
             Some(s) => s,
             None => return None,
@@ -65,14 +65,14 @@ impl<T: Iterator<Item = f64>> Phasor for FM<T> {
     }
 }
 
-pub struct AM<T: Iterator<Item = f64>> {
+pub struct AM<T: Iterator<Item = f32>> {
     sig: T,
-    amplitude: f64,
-    multiplier: f64,
+    amplitude: f32,
+    multiplier: f32,
 }
 
-impl<T: Iterator<Item = f64>> AM<T> {
-    pub fn new(sig: T, amplitude: f64, multiplier: f64) -> AM<T> {
+impl<T: Iterator<Item = f32>> AM<T> {
+    pub fn new(sig: T, amplitude: f32, multiplier: f32) -> AM<T> {
         AM {
             sig: sig,
             amplitude: amplitude / 2.0,
@@ -81,8 +81,8 @@ impl<T: Iterator<Item = f64>> AM<T> {
     }
 }
 
-impl<T: Iterator<Item = f64>> Phasor for AM<T> {
-    fn next(&mut self, _: usize) -> Option<(f64, f64)> {
+impl<T: Iterator<Item = f32>> Phasor for AM<T> {
+    fn next(&mut self, _: usize) -> Option<(f32, f32)> {
         let next = match self.sig.next() {
             Some(s) => s,
             None => return None,

@@ -3,7 +3,7 @@ use super::{util, freq};
 
 #[derive(Copy, Clone)]
 pub struct Carrier {
-    sample_freq: f64,
+    sample_freq: f32,
     pub sample: usize,
 }
 
@@ -15,11 +15,11 @@ impl Carrier {
         }
     }
 
-    fn inner(&self, s: usize) -> f64 {
-        util::mod_trig(self.sample_freq * s as f64)
+    fn inner(&self, s: usize) -> f32 {
+        util::mod_trig(self.sample_freq * s as f32)
     }
 
-    pub fn next(&mut self) -> f64 {
+    pub fn next(&mut self) -> f32 {
         self.sample += 1;
         self.inner(self.sample)
     }
