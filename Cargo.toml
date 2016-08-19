@@ -4,8 +4,8 @@ version = "0.0.1"
 authors = ["Mick Koch <mick@kochm.co>"]
 
 [dependencies]
-getopts = "*"
-num = "*"
+getopts = "^0.2.14"
+num = "^0.1.35"
 
 [lib]
 name = "modem"
