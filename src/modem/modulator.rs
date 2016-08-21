@@ -1,4 +1,4 @@
-extern crate num;
+use num::complex::Complex32;
 
 use super::{phasor, digital, carrier, data};
 
@@ -27,7 +27,7 @@ impl Modulator {
 }
 
 impl Iterator for Modulator {
-    type Item = num::Complex<f32>;
+    type Item = Complex32;
 
     fn next(&mut self) -> Option<Self::Item> {
         let phase = self.carrier.next();
@@ -40,7 +40,7 @@ impl Iterator for Modulator {
         let cos = phase.cos();
         let sin = phase.sin();
 
-        Some(num::Complex::new(real(i, q, cos, sin), imag(i, q, cos, sin)))
+        Some(Complex32::new(real(i, q, cos, sin), imag(i, q, cos, sin)))
     }
 }
 
@@ -68,7 +68,7 @@ impl DigitalModulator {
 }
 
 impl Iterator for DigitalModulator {
-    type Item = num::Complex<f32>;
+    type Item = Complex32;
 
     fn next(&mut self) -> Option<Self::Item> {
         let phase = self.carrier.next();
@@ -87,6 +87,6 @@ impl Iterator for DigitalModulator {
         let cos = phase.cos();
         let sin = phase.sin();
 
-        Some(num::Complex::new(real(i, q, cos, sin), imag(i, q, cos, sin)))
+        Some(Complex32::new(real(i, q, cos, sin), imag(i, q, cos, sin)))
     }
 }

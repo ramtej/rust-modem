@@ -1,3 +1,5 @@
+extern crate num;
+
 pub mod carrier;
 pub mod data;
 pub mod demodulator;
