@@ -27,7 +27,7 @@ fn main() {
           .optopt("b", "", "baud rate (symbols/sec)", "RATE")
           .optopt("c", "", "carrier frequency (Hz)", "FREQ");
 
-    let args: Vec<String> = std::env::args().skip(1).collect();
+    let args: Vec<_> = std::env::args().skip(1).collect();
     let opts = parser.parse(&args).unwrap();
 
     if opts.opt_present("h") {
