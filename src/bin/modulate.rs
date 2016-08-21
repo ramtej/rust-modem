@@ -25,7 +25,8 @@ fn main() {
           .optopt("n", "", "analog modulation to use", "MOD")
           .optopt("r", "", "sample rate (samples/sec)", "RATE")
           .optopt("b", "", "baud rate (symbols/sec)", "RATE")
-          .optopt("c", "", "carrier frequency (Hz)", "FREQ");
+          .optopt("c", "", "carrier frequency (Hz)", "FREQ")
+          .optopt("p", "", "preamble cycles", "CYCLES");
 
     let args: Vec<_> = std::env::args().skip(1).collect();
     let opts = parser.parse(&args).unwrap();
@@ -57,6 +58,16 @@ fn main() {
         None => 900,
     };
 
+    let pc: usize = match opts.opt_str("p") {
+        Some(c) => {
+            assert!(sr % cf == 0);
+            c.parse().expect("invalid preamble cycles")
+        },
+        None => 0,
+    };
+
+    assert!(cf < sr / 2);
+
     let rates = Rates::new(br, sr);
     let carrier = Carrier::new(Freq::new(cf, sr));
 
@@ -82,9 +93,11 @@ fn main() {
     let mut preamble = modulator::Modulator::new(carrier,
         Box::new(phasor::Raw::new(AMPLITUDE)));
 
-    output((&mut preamble)
-        .map(|x| x.re)
-        .take(rates.samples_per_symbol * 8));
+    if pc > 0 {
+        output((&mut preamble)
+            .map(|x| x.re)
+            .take(sr / cf * pc - 1));
+    }
 
     // Retrieve the carrier back from the preamble.
     let carrier = preamble.into_carrier();
