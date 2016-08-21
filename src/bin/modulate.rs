@@ -5,7 +5,7 @@ extern crate modem;
 use byteorder::{LittleEndian, WriteBytesExt};
 use std::f32::consts::PI;
 
-use modem::{phasor, modulator, integrator, digital, data};
+use modem::{phasor, modulator, digital, data};
 use modem::freq::Freq;
 use modem::rates::Rates;
 use modem::carrier::Carrier;
@@ -22,7 +22,6 @@ fn main() {
 
     parser.optflag("h", "help", "show usage")
           .optopt("m", "", "digital modulation to use", "MOD")
-          .optopt("n", "", "analog modulation to use", "MOD")
           .optopt("r", "", "sample rate (samples/sec)", "RATE")
           .optopt("b", "", "baud rate (symbols/sec)", "RATE")
           .optopt("c", "", "carrier frequency (Hz)", "FREQ")
@@ -38,8 +37,6 @@ fn main() {
 
     // The digital modulation to use.
     let dmod = opts.opt_str("m").expect("digital modulation is required");
-    // The analog modulation to use.
-    let amod = opts.opt_str("n");
 
     // The sample rate to use.
     let sr: usize = match opts.opt_str("r") {
@@ -114,32 +111,7 @@ fn main() {
         _ => Box::new(bits),
     };
 
-    // Create the digital modulator and use only the real part of the signal.
-    let digi = modulator::DigitalModulator::new(carrier, phasor, src)
-        .map(|x| x.re);
-
-    // Wrap the digital modulator in an analog modulator if necessary.
-    if let Some(s) = amod {
-        let aphasor: Box<phasor::Phasor> = match s.as_ref() {
-            "fm" => {
-                let int = integrator::Integrator::new(digi, AMPLITUDE);
-
-                Box::new(phasor::FM::new(int, std::i16::MAX as f32,
-                                         Freq::new(1000, sr)))
-            },
-            "am" => {
-                Box::new(phasor::AM::new(digi, std::i16::MAX as f32, 0.5))
-            },
-            _ => panic!("invalid analog modulation"),
-        };
-
-        output(modulator::Modulator::new(
-            Carrier::new(Freq::new(1000, sr)),
-            aphasor
-        ).map(|x| x.re));
-    } else {
-        output(digi);
-    }
+    output(modulator::DigitalModulator::new(&mut carrier, phasor, src).map(|x| x.re));
 }
 
 // Output an iterator of f32 samples to stdout as i16 samples.
