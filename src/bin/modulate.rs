@@ -63,19 +63,19 @@ fn main() {
 
     // Parse the digital modulation into a phasor.
     let phasor: Box<digital::DigitalPhasor> = match dmod.as_ref() {
-        "bask" => Box::new(digital::BASK::new(AMPLITUDE)),
-        "bpsk" => Box::new(digital::BPSK::new(std::f32::consts::PI/4.0, AMPLITUDE)),
-        "bfsk" => Box::new(digital::BFSK::new(freq::Freq::new(200, sr), AMPLITUDE)),
-        "qpsk" => Box::new(digital::QPSK::new(0.0, AMPLITUDE)),
-        "qam16" => Box::new(digital::QAM::new(4, 0.0, AMPLITUDE)),
-        "qam256" => Box::new(digital::QAM::new(8, 0.0, AMPLITUDE)),
-        "msk" => Box::new(digital::MSK::new(AMPLITUDE, rates.samples_per_symbol)),
-        "mfsk" => Box::new(digital::MFSK::new(4, freq::Freq::new(50, sr),
-            AMPLITUDE, digital::IncreaseMap)),
-        "16psk" => Box::new(digital::MPSK::new(4, 0.0, AMPLITUDE)),
-        "oqpsk" => Box::new(digital::OQPSK::new(AMPLITUDE)),
-        "dqpsk" => Box::new(digital::DQPSK::new(AMPLITUDE)),
-        "16cpfsk" => Box::new(digital::CPFSK::new(4, rates, AMPLITUDE, 1)),
+        "bask" => Box::new(digital::bask::BASK::new(AMPLITUDE)),
+        "bpsk" => Box::new(digital::bpsk::BPSK::new(std::f32::consts::PI/4.0, AMPLITUDE)),
+        "bfsk" => Box::new(digital::bfsk::BFSK::new(freq::Freq::new(200, sr), AMPLITUDE)),
+        "qpsk" => Box::new(digital::qpsk::QPSK::new(0.0, AMPLITUDE)),
+        "qam16" => Box::new(digital::qam::QAM::new(4, 0.0, AMPLITUDE)),
+        "qam256" => Box::new(digital::qam::QAM::new(8, 0.0, AMPLITUDE)),
+        "msk" => Box::new(digital::msk::MSK::new(AMPLITUDE, rates.samples_per_symbol)),
+        "mfsk" => Box::new(digital::mfsk::MFSK::new(4, freq::Freq::new(50, sr),
+            AMPLITUDE, digital::mfsk::IncreaseMap)),
+        "16psk" => Box::new(digital::mpsk::MPSK::new(4, 0.0, AMPLITUDE)),
+        "oqpsk" => Box::new(digital::oqpsk::OQPSK::new(AMPLITUDE)),
+        "dqpsk" => Box::new(digital::dqpsk::DQPSK::new(AMPLITUDE)),
+        "16cpfsk" => Box::new(digital::cpfsk::CPFSK::new(4, rates, AMPLITUDE, 1)),
         _ => panic!("invalid digital modulation"),
     };
 
