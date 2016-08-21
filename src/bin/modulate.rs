@@ -3,6 +3,7 @@ extern crate getopts;
 extern crate modem;
 
 use byteorder::{LittleEndian, WriteBytesExt};
+use std::f32::consts::PI;
 
 use modem::{phasor, modulator, integrator, digital, data};
 use modem::freq::Freq;
@@ -67,7 +68,7 @@ fn main() {
     // Parse the digital modulation into a phasor.
     let phasor: Box<digital::DigitalPhasor> = match dmod.as_ref() {
         "bask" => Box::new(digital::bask::BASK::new(AMPLITUDE)),
-        "bpsk" => Box::new(digital::bpsk::BPSK::new(std::f32::consts::PI/4.0, AMPLITUDE)),
+        "bpsk" => Box::new(digital::bpsk::BPSK::new(PI / 4.0, AMPLITUDE)),
         "bfsk" => Box::new(digital::bfsk::BFSK::new(Freq::new(200, sr), AMPLITUDE)),
         "qpsk" => Box::new(digital::qpsk::QPSK::new(0.0, AMPLITUDE)),
         "qam16" => Box::new(digital::qam::QAM::new(4, 0.0, AMPLITUDE)),
