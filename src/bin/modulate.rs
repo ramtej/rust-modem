@@ -42,13 +42,13 @@ fn main() {
 
     // The sample rate to use.
     let sr: usize = match opts.opt_str("r") {
-        Some(s) => s.parse().unwrap(),
+        Some(s) => s.parse().expect("invalid sample rate"),
         None => 10000,
     };
 
     // The baud rate to use.
     let br: usize = match opts.opt_str("b") {
-        Some(s) => s.parse().unwrap(),
+        Some(s) => s.parse().expect("invalid baud rate"),
         None => 220,
     };
 
