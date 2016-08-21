@@ -66,7 +66,7 @@ fn main() {
     assert!(cf < sr / 2);
 
     let rates = Rates::new(br, sr);
-    let carrier = Carrier::new(Freq::new(cf, sr));
+    let mut carrier = Carrier::new(Freq::new(cf, sr));
 
     // Parse the digital modulation into a phasor.
     let phasor: Box<digital::DigitalPhasor> = match dmod.as_ref() {
@@ -86,18 +86,13 @@ fn main() {
         _ => panic!("invalid digital modulation"),
     };
 
-    // Generate the initial carrier sync tone.
-    let mut preamble = modulator::Modulator::new(carrier,
-        Box::new(phasor::Raw::new(AMPLITUDE)));
-
     if pc > 0 {
-        output((&mut preamble)
-            .map(|x| x.re)
-            .take(sr / cf * pc - 1));
-    }
+        // Generate the initial carrier sync tone.
+        let preamble = modulator::Modulator::new(&mut carrier,
+            Box::new(phasor::Raw::new(AMPLITUDE)));
 
-    // Retrieve the carrier back from the preamble.
-    let carrier = preamble.into_carrier();
+        output(preamble.map(|x| x.re).take(sr / cf * pc - 1));
+    }
 
     // Get the user-supplied bits.
     let bits = data::AsciiBits::new(std::io::stdin(), rates.samples_per_symbol,

@@ -13,23 +13,21 @@ fn imag(i: f32, q: f32, cos: f32, sin: f32) -> f32 {
     i * sin + q * cos
 }
 
-pub struct Modulator {
-    carrier: Carrier,
+pub struct Modulator<'a> {
+    carrier: &'a mut Carrier,
     phasor: Box<Phasor>,
 }
 
-impl Modulator {
-    pub fn new(c: Carrier, psr: Box<Phasor>) -> Modulator {
+impl<'a> Modulator<'a> {
+    pub fn new(c: &'a mut Carrier, psr: Box<Phasor>) -> Modulator<'a> {
         Modulator {
             carrier: c,
             phasor: psr,
         }
     }
-
-    pub fn into_carrier(self) -> Carrier { self.carrier }
 }
 
-impl Iterator for Modulator {
+impl<'a> Iterator for Modulator<'a> {
     type Item = Complex32;
 
     fn next(&mut self) -> Option<Self::Item> {
@@ -46,15 +44,17 @@ impl Iterator for Modulator {
     }
 }
 
-pub struct DigitalModulator {
+pub struct DigitalModulator<'a> {
     start_sample: usize,
     data: Box<Source>,
-    carrier: Carrier,
+    carrier: &'a mut Carrier,
     phasor: Box<DigitalPhasor>,
 }
 
-impl DigitalModulator {
-    pub fn new(c: Carrier, psr: Box<DigitalPhasor>, src: Box<Source>) -> DigitalModulator {
+impl<'a> DigitalModulator<'a> {
+    pub fn new(c: &'a mut Carrier, psr: Box<DigitalPhasor>, src: Box<Source>)
+        -> DigitalModulator<'a>
+    {
         DigitalModulator {
             start_sample: c.sample + 1,
             data: src,
@@ -62,11 +62,9 @@ impl DigitalModulator {
             phasor: psr,
         }
     }
-
-    pub fn into_carrier(self) -> Carrier { self.carrier }
 }
 
-impl Iterator for DigitalModulator {
+impl<'a> Iterator for DigitalModulator<'a> {
     type Item = Complex32;
 
     fn next(&mut self) -> Option<Self::Item> {
