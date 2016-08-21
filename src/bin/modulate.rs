@@ -36,11 +36,7 @@ fn main() {
     }
 
     // The digital modulation to use.
-    let dmod = match opts.opt_str("m") {
-        Some(s) => s,
-        None => panic!("no modulator given"),
-    };
-
+    let dmod = opts.opt_str("m").expect("digital modulation is required");
     // The analog modulation to use.
     let amod = opts.opt_str("n");
 
