@@ -40,8 +40,7 @@ impl Iterator for Modulator {
             None => return None,
         };
 
-        let cos = phase.cos();
-        let sin = phase.sin();
+        let (sin, cos) = phase.sin_cos();
 
         Some(Complex32::new(real(i, q, cos, sin), imag(i, q, cos, sin)))
     }
@@ -83,9 +82,7 @@ impl Iterator for DigitalModulator {
         };
 
         let (i, q) = self.phasor.next(self.carrier.sample, bits);
-
-        let cos = phase.cos();
-        let sin = phase.sin();
+        let (sin, cos) = phase.sin_cos();
 
         Some(Complex32::new(real(i, q, cos, sin), imag(i, q, cos, sin)))
     }
