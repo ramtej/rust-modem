@@ -20,7 +20,8 @@ fn main() {
           .optopt("m", "", "digital modulation to use", "MOD")
           .optopt("n", "", "analog modulation to use", "MOD")
           .optopt("r", "", "sample rate (samples/sec)", "RATE")
-          .optopt("b", "", "baud rate (symbols/sec)", "RATE");
+          .optopt("b", "", "baud rate (symbols/sec)", "RATE")
+          .optopt("c", "", "carrier frequency (Hz)", "FREQ");
 
     let args: Vec<String> = std::env::args().skip(1).collect();
     let opts = parser.parse(&args).unwrap();
@@ -51,10 +52,14 @@ fn main() {
         None => 220,
     };
 
+    let cf: usize = match opts.opt_str("c") {
+        Some(f) => f.parse().expect("invalid carrier frequency"),
+        None => 900,
+    };
+
     let rates = rates::Rates::new(br, sr);
 
-    // The 900Hz carrier frequency is arbitrary but sounds good.
-    let carrier = carrier::Carrier::new(freq::Freq::new(900, sr));
+    let carrier = carrier::Carrier::new(freq::Freq::new(cf, sr));
 
     // Parse the digital modulation into a phasor.
     let phasor: Box<digital::DigitalPhasor> = match dmod.as_ref() {
