@@ -98,20 +98,20 @@ fn main() {
     };
 
     // Create the digital modulator and use only the real part of the signal.
-    let dmodul = modulator::DigitalModulator::new(carrier, phasor, src)
+    let digi = modulator::DigitalModulator::new(carrier, phasor, src)
         .map(|x| x.re);
 
     // Wrap the digital modulator in an analog modulator if necessary.
     if let Some(s) = amod {
         let aphasor: Box<phasor::Phasor> = match s.as_ref() {
             "fm" => {
-                let int = integrator::Integrator::new(dmodul, AMPLITUDE);
+                let int = integrator::Integrator::new(digi, AMPLITUDE);
 
                 Box::new(phasor::FM::new(int, std::i16::MAX as f32,
                                          freq::Freq::new(1000, sr)))
             },
             "am" => {
-                Box::new(phasor::AM::new(dmodul, std::i16::MAX as f32, 0.5))
+                Box::new(phasor::AM::new(digi, std::i16::MAX as f32, 0.5))
             },
             _ => panic!("invalid analog modulation"),
         };
@@ -123,7 +123,7 @@ fn main() {
 
         output(modul);
     } else {
-        output(dmodul);
+        output(digi);
     };
 }
 
