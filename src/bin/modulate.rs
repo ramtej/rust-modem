@@ -4,7 +4,10 @@ extern crate modem;
 
 use byteorder::{LittleEndian, WriteBytesExt};
 
-use modem::{carrier, phasor, freq, modulator, integrator, digital, data, rates};
+use modem::{phasor, modulator, integrator, digital, data};
+use modem::freq::Freq;
+use modem::rates::Rates;
+use modem::carrier::Carrier;
 
 // The maximum amplitude of the output waveform.
 const AMPLITUDE: f32 = 1.0;
@@ -57,20 +60,20 @@ fn main() {
         None => 900,
     };
 
-    let rates = rates::Rates::new(br, sr);
+    let rates = Rates::new(br, sr);
 
-    let carrier = carrier::Carrier::new(freq::Freq::new(cf, sr));
+    let carrier = Carrier::new(Freq::new(cf, sr));
 
     // Parse the digital modulation into a phasor.
     let phasor: Box<digital::DigitalPhasor> = match dmod.as_ref() {
         "bask" => Box::new(digital::bask::BASK::new(AMPLITUDE)),
         "bpsk" => Box::new(digital::bpsk::BPSK::new(std::f32::consts::PI/4.0, AMPLITUDE)),
-        "bfsk" => Box::new(digital::bfsk::BFSK::new(freq::Freq::new(200, sr), AMPLITUDE)),
+        "bfsk" => Box::new(digital::bfsk::BFSK::new(Freq::new(200, sr), AMPLITUDE)),
         "qpsk" => Box::new(digital::qpsk::QPSK::new(0.0, AMPLITUDE)),
         "qam16" => Box::new(digital::qam::QAM::new(4, 0.0, AMPLITUDE)),
         "qam256" => Box::new(digital::qam::QAM::new(8, 0.0, AMPLITUDE)),
         "msk" => Box::new(digital::msk::MSK::new(AMPLITUDE, rates.samples_per_symbol)),
-        "mfsk" => Box::new(digital::mfsk::MFSK::new(4, freq::Freq::new(50, sr),
+        "mfsk" => Box::new(digital::mfsk::MFSK::new(4, Freq::new(50, sr),
             AMPLITUDE, digital::mfsk::IncreaseMap)),
         "16psk" => Box::new(digital::mpsk::MPSK::new(4, 0.0, AMPLITUDE)),
         "oqpsk" => Box::new(digital::oqpsk::OQPSK::new(AMPLITUDE)),
@@ -113,7 +116,7 @@ fn main() {
                 let int = integrator::Integrator::new(digi, AMPLITUDE);
 
                 Box::new(phasor::FM::new(int, std::i16::MAX as f32,
-                                         freq::Freq::new(1000, sr)))
+                                         Freq::new(1000, sr)))
             },
             "am" => {
                 Box::new(phasor::AM::new(digi, std::i16::MAX as f32, 0.5))
@@ -122,7 +125,7 @@ fn main() {
         };
 
         let modul = modulator::Modulator::new(
-            carrier::Carrier::new(freq::Freq::new(1000, sr)),
+            Carrier::new(Freq::new(1000, sr)),
             aphasor
         ).map(|x| x.re);
 
