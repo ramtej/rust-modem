@@ -55,7 +55,7 @@ fn main() {
 
     let cf: usize = match opts.opt_str("c") {
         Some(f) => f.parse().expect("invalid carrier frequency"),
-        None => 900,
+        None => 1000,
     };
 
     let pc: usize = match opts.opt_str("p") {
