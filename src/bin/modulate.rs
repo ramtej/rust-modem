@@ -120,12 +120,10 @@ fn main() {
             _ => panic!("invalid analog modulation"),
         };
 
-        let modul = modulator::Modulator::new(
+        output(modulator::Modulator::new(
             Carrier::new(Freq::new(1000, sr)),
             aphasor
-        ).map(|x| x.re);
-
-        output(modul);
+        ).map(|x| x.re));
     } else {
         output(digi);
     };
