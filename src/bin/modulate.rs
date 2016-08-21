@@ -126,7 +126,7 @@ fn main() {
         ).map(|x| x.re));
     } else {
         output(digi);
-    };
+    }
 }
 
 // Output an iterator of f32 samples to stdout as i16 samples.
