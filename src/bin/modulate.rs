@@ -58,7 +58,6 @@ fn main() {
     };
 
     let rates = Rates::new(br, sr);
-
     let carrier = Carrier::new(Freq::new(cf, sr));
 
     // Parse the digital modulation into a phasor.
