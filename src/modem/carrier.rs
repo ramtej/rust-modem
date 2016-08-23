@@ -1,4 +1,3 @@
-use std;
 use super::{util, freq};
 
 #[derive(Copy, Clone)]
@@ -11,7 +10,7 @@ impl Carrier {
     pub fn new(freq: freq::Freq) -> Carrier {
         Carrier {
             sample_freq: freq.sample_freq(),
-            sample: std::usize::MAX,
+            sample: 0,
         }
     }
 
@@ -20,7 +19,9 @@ impl Carrier {
     }
 
     pub fn next(&mut self) -> f32 {
-        self.sample = self.sample.wrapping_add(1);
-        self.inner(self.sample)
+        let sample = self.sample;
+        self.sample += 1;
+
+        self.inner(sample)
     }
 }
