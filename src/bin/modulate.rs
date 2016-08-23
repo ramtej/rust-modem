@@ -87,16 +87,6 @@ fn main() {
         _ => panic!("invalid digital modulation"),
     };
 
-    if pc > 0 {
-        // Generate the initial carrier sync tone.
-        let preamble = modulator::Modulator::new(&mut carrier,
-            Box::new(phasor::Raw::new(AMPLITUDE)));
-
-        for s in preamble.map(|x| x.modulate().re).take(sr / cf * pc - 1) {
-            out.write_f32::<LittleEndian>(s).unwrap();
-        }
-    }
-
     // Get the user-supplied bits.
     let bits = data::AsciiBits::new(std::io::stdin(), rates.samples_per_symbol,
                                     phasor.bits_per_symbol());
@@ -108,6 +98,16 @@ fn main() {
                 phasor.bits_per_symbol())),
         _ => Box::new(bits),
     };
+
+    if pc > 0 {
+        // Generate the initial carrier sync tone.
+        let preamble = modulator::Modulator::new(&mut carrier,
+            Box::new(phasor::Raw::new(AMPLITUDE)));
+
+        for s in preamble.map(|x| x.modulate().re).take(sr / cf * pc - 1) {
+            out.write_f32::<LittleEndian>(s).unwrap();
+        }
+    }
 
     let digi = modulator::DigitalModulator::new(&mut carrier, phasor, src)
                    .map(|x| x.modulate().re);
