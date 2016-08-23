@@ -18,6 +18,7 @@ const USAGE: &'static str = "
     Modulate the bits on stdin to a waveform on stdout";
 
 fn main() {
+    let mut out = std::io::stdout();
     let mut parser = getopts::Options::new();
 
     parser.optflag("h", "help", "show usage")
@@ -91,7 +92,9 @@ fn main() {
         let preamble = modulator::Modulator::new(&mut carrier,
             Box::new(phasor::Raw::new(AMPLITUDE)));
 
-        output(preamble.map(|x| x.modulate().re).take(sr / cf * pc - 1));
+        for s in preamble.map(|x| x.modulate().re).take(sr / cf * pc - 1) {
+            out.write_f32::<LittleEndian>(s).unwrap();
+        }
     }
 
     // Get the user-supplied bits.
@@ -106,14 +109,10 @@ fn main() {
         _ => Box::new(bits),
     };
 
-    output(modulator::DigitalModulator::new(&mut carrier, phasor, src)
-               .map(|x| x.modulate().re));
-}
+    let digi = modulator::DigitalModulator::new(&mut carrier, phasor, src)
+                   .map(|x| x.modulate().re);
 
-fn output<T: Iterator<Item = f32>>(iter: T) {
-    let mut out = std::io::stdout();
-
-    for sample in iter {
-        out.write_f32::<LittleEndian>(sample).unwrap();
+    for s in digi {
+        out.write_f32::<LittleEndian>(s).unwrap();
     }
 }
