@@ -109,7 +109,6 @@ fn main() {
     output(modulator::DigitalModulator::new(&mut carrier, phasor, src).map(|x| x.re));
 }
 
-// Output an iterator of f32 samples to stdout as i16 samples.
 fn output<T: Iterator<Item = f32>>(iter: T) {
     let mut out = std::io::stdout();
 
