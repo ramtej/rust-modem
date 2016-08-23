@@ -91,7 +91,7 @@ fn main() {
         let preamble = modulator::Modulator::new(&mut carrier,
             Box::new(phasor::Raw::new(AMPLITUDE)));
 
-        output(preamble.map(|x| x.re).take(sr / cf * pc - 1));
+        output(preamble.map(|x| x.modulate().re).take(sr / cf * pc - 1));
     }
 
     // Get the user-supplied bits.
@@ -106,7 +106,8 @@ fn main() {
         _ => Box::new(bits),
     };
 
-    output(modulator::DigitalModulator::new(&mut carrier, phasor, src).map(|x| x.re));
+    output(modulator::DigitalModulator::new(&mut carrier, phasor, src)
+               .map(|x| x.modulate().re));
 }
 
 fn output<T: Iterator<Item = f32>>(iter: T) {

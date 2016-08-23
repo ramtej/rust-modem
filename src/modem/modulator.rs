@@ -5,14 +5,6 @@ use phasor::Phasor;
 use carrier::Carrier;
 use digital::DigitalPhasor;
 
-fn real(i: f32, q: f32, cos: f32, sin: f32) -> f32 {
-    i * cos - q * sin
-}
-
-fn imag(i: f32, q: f32, cos: f32, sin: f32) -> f32 {
-    i * sin + q * cos
-}
-
 pub struct Modulator<'a> {
     carrier: &'a mut Carrier,
     phasor: Box<Phasor>,
@@ -27,20 +19,45 @@ impl<'a> Modulator<'a> {
     }
 }
 
+pub struct IQSample {
+    carrier: f32,
+    pub i: f32,
+    pub q: f32,
+}
+
+impl IQSample {
+    fn new(carrier: f32, i: f32, q: f32) -> IQSample {
+        IQSample {
+            carrier: carrier,
+            i: i,
+            q: q,
+        }
+    }
+
+    fn real(&self, cos: f32, sin: f32) -> f32 {
+        self.i * cos - self.q * sin
+    }
+
+    fn imag(&self, cos: f32, sin: f32) -> f32 {
+        self.i * sin + self.q * cos
+    }
+
+    pub fn modulate(&self) -> Complex32 {
+        let (sin, cos) = self.carrier.sin_cos();
+        Complex32::new(self.real(cos, sin), self.imag(cos, sin))
+    }
+}
+
 impl<'a> Iterator for Modulator<'a> {
-    type Item = Complex32;
+    type Item = IQSample;
 
     fn next(&mut self) -> Option<Self::Item> {
         let phase = self.carrier.next();
 
-        let (i, q) = match self.phasor.next(self.carrier.sample) {
-            Some((i, q)) => (i, q),
-            None => return None,
-        };
-
-        let (sin, cos) = phase.sin_cos();
-
-        Some(Complex32::new(real(i, q, cos, sin), imag(i, q, cos, sin)))
+        match self.phasor.next(self.carrier.sample) {
+            Some((i, q)) => Some(IQSample::new(phase, i, q)),
+            None => None,
+        }
     }
 }
 
@@ -51,19 +68,19 @@ pub struct DigitalModulator<'a> {
 }
 
 impl<'a> DigitalModulator<'a> {
-    pub fn new(c: &'a mut Carrier, psr: Box<DigitalPhasor>, src: Box<Source>)
+    pub fn new(c: &'a mut Carrier, phasor: Box<DigitalPhasor>, src: Box<Source>)
         -> DigitalModulator<'a>
     {
         DigitalModulator {
             data: src,
             carrier: c,
-            phasor: psr,
+            phasor: phasor,
         }
     }
 }
 
 impl<'a> Iterator for DigitalModulator<'a> {
-    type Item = Complex32;
+    type Item = IQSample;
 
     fn next(&mut self) -> Option<Self::Item> {
         let phase = self.carrier.next();
@@ -73,13 +90,12 @@ impl<'a> Iterator for DigitalModulator<'a> {
             SourceUpdate::Changed(b) => {
                 self.phasor.update(self.carrier.sample, b);
                 b
-            }
+            },
             SourceUpdate::Unchanged(b) => b,
         };
 
         let (i, q) = self.phasor.next(self.carrier.sample, bits);
-        let (sin, cos) = phase.sin_cos();
 
-        Some(Complex32::new(real(i, q, cos, sin), imag(i, q, cos, sin)))
+        Some(IQSample::new(phase, i, q))
     }
 }
