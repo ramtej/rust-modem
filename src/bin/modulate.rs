@@ -26,7 +26,8 @@ fn main() {
           .optopt("r", "", "sample rate (samples/sec)", "RATE")
           .optopt("b", "", "baud rate (symbols/sec)", "RATE")
           .optopt("c", "", "carrier frequency (Hz)", "FREQ")
-          .optopt("p", "", "preamble cycles", "CYCLES");
+          .optopt("p", "", "preamble cycles", "CYCLES")
+          .optflag("", "iq", "output raw IQ samples");
 
     let args: Vec<_> = std::env::args().skip(1).collect();
     let opts = parser.parse(&args).unwrap();
@@ -98,6 +99,15 @@ fn main() {
                 phasor.bits_per_symbol())),
         _ => Box::new(bits),
     };
+
+    if opts.opt_present("iq") {
+        for s in modulator::DigitalModulator::new(&mut carrier, phasor, src) {
+            out.write_f32::<LittleEndian>(s.i).unwrap();
+            out.write_f32::<LittleEndian>(s.q).unwrap();
+        }
+
+        return;
+    }
 
     if pc > 0 {
         // Generate the initial carrier sync tone.
