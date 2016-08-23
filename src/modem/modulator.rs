@@ -11,10 +11,10 @@ pub struct Modulator<'a> {
 }
 
 impl<'a> Modulator<'a> {
-    pub fn new(c: &'a mut Carrier, psr: Box<Phasor>) -> Modulator<'a> {
+    pub fn new(c: &'a mut Carrier, phasor: Box<Phasor>) -> Modulator<'a> {
         Modulator {
             carrier: c,
-            phasor: psr,
+            phasor: phasor,
         }
     }
 }
