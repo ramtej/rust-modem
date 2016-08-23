@@ -1,5 +1,6 @@
 use std;
 
+#[derive(PartialEq, Eq)]
 pub enum SourceUpdate<'a> {
     Changed(&'a [u8]),
     Unchanged(&'a [u8]),
@@ -7,56 +8,35 @@ pub enum SourceUpdate<'a> {
 }
 
 pub trait Source {
-    fn update(&mut self, s: usize) -> SourceUpdate;
+    fn next(&mut self) -> SourceUpdate;
 }
 
 struct SymbolClock {
-    cur_idx: usize,
     samples_per_symbol: usize,
+    counter: usize,
 }
 
 impl SymbolClock {
     pub fn new(samples_per_symbol: usize) -> SymbolClock {
         SymbolClock {
-            cur_idx: std::usize::MAX,
             samples_per_symbol: samples_per_symbol,
+            counter: samples_per_symbol - 1,
         }
     }
 
-    pub fn symbol_idx(&self) -> usize { self.cur_idx }
+    pub fn next(&mut self) -> bool {
+        self.counter += 1;
+        self.counter %= self.samples_per_symbol;
 
-    pub fn update(&mut self, s: usize) -> bool {
-        match self.check(s) {
-            None => false,
-            Some(idx) => {
-                self.cur_idx = idx;
-                true
-            }
-        }
-    }
-
-    fn check(&self, s: usize) -> Option<usize> {
-        let idx = self.sample_to_idx(s);
-
-        if self.cur_idx == idx {
-            None
-        } else {
-            // Ensure the index moved forward and only by one symbol.
-            assert!(idx == self.cur_idx.wrapping_add(1));
-
-            Some(idx)
-        }
-    }
-
-    fn sample_to_idx(&self, s: usize) -> usize {
-        s / self.samples_per_symbol
+        self.counter == 0
     }
 }
 
 pub struct Bits<'a> {
     bits: &'a [u8],
-    bits_per_symbol: usize,
     clock: SymbolClock,
+    bits_per_symbol: usize,
+    idx: usize,
 }
 
 impl<'a> Bits<'a> {
@@ -65,13 +45,14 @@ impl<'a> Bits<'a> {
     {
         Bits {
             bits: bits,
-            bits_per_symbol: bits_per_symbol,
             clock: SymbolClock::new(samples_per_symbol),
+            bits_per_symbol: bits_per_symbol,
+            idx: 0,
         }
     }
 
     fn bits(&self) -> Option<&[u8]> {
-        let start = self.clock.symbol_idx() * self.bits_per_symbol;
+        let start = (self.idx - 1) * self.bits_per_symbol;
         let end = start + self.bits_per_symbol;
 
         if end <= self.bits.len() {
@@ -83,8 +64,10 @@ impl<'a> Bits<'a> {
 }
 
 impl<'a> Source for Bits<'a> {
-    fn update(&mut self, s: usize) -> SourceUpdate {
-        if self.clock.update(s) {
+    fn next(&mut self) -> SourceUpdate {
+        if self.clock.next() {
+            self.idx += 1;
+
             match self.bits() {
                 Some(b) => SourceUpdate::Changed(b),
                 None => SourceUpdate::Finished,
@@ -106,6 +89,7 @@ impl<D: Source> EvenOddOffset<D> {
         -> EvenOddOffset<D>
     {
         assert!(bits_per_symbol == 2);
+        assert!(samples_per_symbol % bits_per_symbol == 0);
 
         EvenOddOffset {
             data: data,
@@ -116,11 +100,11 @@ impl<D: Source> EvenOddOffset<D> {
 }
 
 impl<D: Source> Source for EvenOddOffset<D> {
-    fn update(&mut self, s: usize) -> SourceUpdate {
-        let bits = match self.data.update(s) {
+    fn next(&mut self) -> SourceUpdate {
+        let bits = match self.data.next() {
             SourceUpdate::Finished => return SourceUpdate::Finished,
             SourceUpdate::Changed(b) => {
-                self.clock.update(s);
+                self.clock.next();
                 self.cur[0] = b[0];
 
                 return SourceUpdate::Changed(&self.cur[..]);
@@ -129,7 +113,7 @@ impl<D: Source> Source for EvenOddOffset<D> {
         };
 
         // Half-symbol update?
-        if self.clock.update(s) {
+        if self.clock.next() {
             self.cur[1] = bits[1];
             SourceUpdate::Changed(&self.cur[..])
         } else {
@@ -188,8 +172,8 @@ impl<R: std::io::Read> AsciiBits<R> {
 }
 
 impl<R: std::io::Read> Source for AsciiBits<R> {
-    fn update(&mut self, s: usize) -> SourceUpdate {
-        if self.clock.update(s) {
+    fn next(&mut self) -> SourceUpdate {
+        if self.clock.next() {
             if self.read_bits() {
                 SourceUpdate::Changed(&self.bits[..])
             } else {
@@ -203,114 +187,76 @@ impl<R: std::io::Read> Source for AsciiBits<R> {
 
 #[cfg(test)]
 mod test {
+    use std;
+    use std::io::Write;
+    use super::{Bits, Source, SourceUpdate, SymbolClock, EvenOddOffset, AsciiBits};
+
     #[test]
-    fn test_bitclock() {
-        use super::{SymbolClock};
+    fn test_symbol_clock() {
+        let mut bc = SymbolClock::new(5);
 
-        let mut bc = SymbolClock::new(10);
-
-        assert!(bc.update(0));
-        assert!(bc.symbol_idx() == 0);
-
-        assert!(bc.update(10));
-        assert!(bc.symbol_idx() == 1);
-
-        assert_eq!(bc.sample_to_idx(100), 10);
+        assert!(bc.next());
+        assert!(!bc.next());
+        assert!(!bc.next());
+        assert!(!bc.next());
+        assert!(!bc.next());
+        assert!(bc.next());
+        assert!(!bc.next());
+        assert!(!bc.next());
+        assert!(!bc.next());
+        assert!(!bc.next());
+        assert!(bc.next());
     }
 
     #[test]
     fn test_bits() {
-        use super::{Bits, Source, SourceUpdate};
-
         const BITS: &'static [u8] = &[1, 0, 1, 1];
 
-        let mut ds = Bits::new(BITS, 10, 2);
+        let mut ds = Bits::new(BITS, 3, 2);
 
-        assert!(match ds.update(0) {
-            SourceUpdate::Changed(b) => b[0] == 1 && b[1] == 0,
-            _ => false,
-        });
-
-        assert!(if let SourceUpdate::Unchanged(_) = ds.update(5) { true } else { false });
-
-        assert!(match ds.update(10) {
-            SourceUpdate::Changed(b) => b[0] == 1 && b[1] == 1,
-            _ => false,
-        });
-
-        assert!(if let SourceUpdate::Unchanged(_) = ds.update(18) { true } else { false });
-
-        assert!(match ds.update(20) {
-            SourceUpdate::Finished => true,
-            _ => false,
-        });
+        assert!(ds.next() == SourceUpdate::Changed(&[1, 0]));
+        assert!(ds.next() == SourceUpdate::Unchanged(&[1, 0]));
+        assert!(ds.next() == SourceUpdate::Unchanged(&[1, 0]));
+        assert!(ds.next() == SourceUpdate::Changed(&[1, 1]));
+        assert!(ds.next() == SourceUpdate::Unchanged(&[1, 1]));
+        assert!(ds.next() == SourceUpdate::Unchanged(&[1, 1]));
+        assert!(ds.next() == SourceUpdate::Finished);
     }
 
     #[test]
     fn test_evenodd() {
-        use super::{EvenOddOffset, Bits, Source, SourceUpdate};
+        const BITS: &'static [u8] = &[1, 1, 1, 0, 0, 1];
 
-        const BITS: &'static [u8] = &[1, 0, 0, 1];
+        let ds = Bits::new(BITS, 4, 2);
+        let mut eo = EvenOddOffset::new(ds, 4, 2);
 
-        let ds = Bits::new(BITS, 10, 2);
-        let mut eo = EvenOddOffset::new(ds, 10, 2);
-
-        assert!(match eo.update(0) {
-            SourceUpdate::Changed(b) => b[0] == 1 && b[1] == 0,
-            _ => false,
-        });
-
-        assert!(match eo.update(3) {
-            SourceUpdate::Unchanged(b) => b[0] == 1 && b[1] == 0,
-            _ => false,
-        });
-
-        assert!(match eo.update(5) {
-            SourceUpdate::Changed(b) => b[0] == 1 && b[1] == 0,
-            _ => false,
-        });
-
-        assert!(match eo.update(10) {
-            SourceUpdate::Changed(b) => b[0] == 0 && b[1] == 0,
-            _ => false,
-        });
-
-        assert!(match eo.update(14) {
-            SourceUpdate::Unchanged(b) => b[0] == 0 && b[1] == 0,
-            _ => false,
-        });
-
-        assert!(match eo.update(15) {
-            SourceUpdate::Changed(b) => b[0] == 0 && b[1] == 1,
-            _ => false,
-        });
-
-        assert!(match eo.update(16) {
-            SourceUpdate::Unchanged(b) => b[0] == 0 && b[1] == 1,
-            _ => false,
-        });
-
-        assert!(match eo.update(20) {
-            SourceUpdate::Finished => true,
-            _ => false,
-        });
+        assert!(eo.next() == SourceUpdate::Changed(&[1, 0]));
+        assert!(eo.next() == SourceUpdate::Unchanged(&[1, 0]));
+        assert!(eo.next() == SourceUpdate::Changed(&[1, 1]));
+        assert!(eo.next() == SourceUpdate::Unchanged(&[1, 1]));
+        assert!(eo.next() == SourceUpdate::Changed(&[1, 1]));
+        assert!(eo.next() == SourceUpdate::Unchanged(&[1, 1]));
+        assert!(eo.next() == SourceUpdate::Changed(&[1, 0]));
+        assert!(eo.next() == SourceUpdate::Unchanged(&[1, 0]));
+        assert!(eo.next() == SourceUpdate::Changed(&[0, 0]));
+        assert!(eo.next() == SourceUpdate::Unchanged(&[0, 0]));
+        assert!(eo.next() == SourceUpdate::Changed(&[0, 1]));
+        assert!(eo.next() == SourceUpdate::Unchanged(&[0, 1]));
+        assert!(eo.next() == SourceUpdate::Finished);
     }
 
     #[test]
     fn test_ascii() {
-        use std;
-        use std::io::Write;
-        use super::{AsciiBits, SourceUpdate, Source};
-
         {
             let mut f = std::fs::File::create("ascii.bits").unwrap();
-            f.write_all(b"000\n111").unwrap();
+            f.write_all(b"000\n111\n101").unwrap();
         }
 
         {
             let f = std::fs::File::open("ascii.bits").unwrap();
             let mut a = AsciiBits::new(f, 1, 3);
 
+            assert!(a.read_bits());
             assert!(a.read_bits());
             assert!(a.read_bits());
             assert!(!a.read_bits());
@@ -320,30 +266,13 @@ mod test {
             let f = std::fs::File::open("ascii.bits").unwrap();
             let mut a = AsciiBits::new(f, 2, 3);
 
-            assert!(match a.update(0) {
-                SourceUpdate::Changed(b) => b == &[0,0,0],
-                _ => false,
-            });
-
-            assert!(match a.update(1) {
-                SourceUpdate::Unchanged(b) => b == &[0,0,0],
-                _ => false,
-            });
-
-            assert!(match a.update(2) {
-                SourceUpdate::Changed(b) => b == &[1,1,1],
-                _ => false,
-            });
-
-            assert!(match a.update(3) {
-                SourceUpdate::Unchanged(b) => b == &[1,1,1],
-                _ => false,
-            });
-
-            assert!(match a.update(4) {
-                SourceUpdate::Finished => true,
-                _ => false,
-            });
+            assert!(a.next() == SourceUpdate::Changed(&[0,0,0]));
+            assert!(a.next() == SourceUpdate::Unchanged(&[0,0,0]));
+            assert!(a.next() == SourceUpdate::Changed(&[1,1,1]));
+            assert!(a.next() == SourceUpdate::Unchanged(&[1,1,1]));
+            assert!(a.next() == SourceUpdate::Changed(&[1,0,1]));
+            assert!(a.next() == SourceUpdate::Unchanged(&[1,0,1]));
+            assert!(a.next() == SourceUpdate::Finished);
         }
 
         std::fs::remove_file("ascii.bits").unwrap();

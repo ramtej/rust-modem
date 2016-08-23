@@ -97,11 +97,11 @@ fn main() {
     // Get the user-supplied bits.
     let bits = data::AsciiBits::new(std::io::stdin(), rates.samples_per_symbol,
                                     phasor.bits_per_symbol());
+
     let src: Box<data::Source> = match dmod.as_ref() {
         // MSK and OQPSK require an offset bit source
         "msk" | "oqpsk" =>
-            Box::new(data::EvenOddOffset::new(bits,
-                rates.samples_per_symbol,
+            Box::new(data::EvenOddOffset::new(bits, rates.samples_per_symbol,
                 phasor.bits_per_symbol())),
         _ => Box::new(bits),
     };

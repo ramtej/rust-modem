@@ -45,7 +45,6 @@ impl<'a> Iterator for Modulator<'a> {
 }
 
 pub struct DigitalModulator<'a> {
-    start_sample: usize,
     data: Box<Source>,
     carrier: &'a mut Carrier,
     phasor: Box<DigitalPhasor>,
@@ -56,7 +55,6 @@ impl<'a> DigitalModulator<'a> {
         -> DigitalModulator<'a>
     {
         DigitalModulator {
-            start_sample: c.sample + 1,
             data: src,
             carrier: c,
             phasor: psr,
@@ -70,7 +68,7 @@ impl<'a> Iterator for DigitalModulator<'a> {
     fn next(&mut self) -> Option<Self::Item> {
         let phase = self.carrier.next();
 
-        let bits = match self.data.update(self.carrier.sample - self.start_sample) {
+        let bits = match self.data.next() {
             SourceUpdate::Finished => return None,
             SourceUpdate::Changed(b) => {
                 self.phasor.update(self.carrier.sample, b);
