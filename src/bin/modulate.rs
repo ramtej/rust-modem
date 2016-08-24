@@ -85,6 +85,10 @@ fn main() {
         "oqpsk" => Box::new(digital::oqpsk::OQPSK::new(AMPLITUDE)),
         "dqpsk" => Box::new(digital::dqpsk::DQPSK::new(AMPLITUDE)),
         "16cpfsk" => Box::new(digital::cpfsk::CPFSK::new(4, rates, AMPLITUDE, 1)),
+        "16apsk" => Box::new(digital::apsk::APSK::new(AMPLITUDE, 4, vec![
+            digital::apsk::Ring::new(0..4, 0.5, PI / 4.0),
+            digital::apsk::Ring::new(4..16, 1.0, PI / 12.0),
+        ])),
         _ => panic!("invalid digital modulation"),
     };
 

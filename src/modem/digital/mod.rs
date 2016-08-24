@@ -1,6 +1,7 @@
 mod phasor;
 mod util;
 
+pub mod apsk;
 pub mod bask;
 pub mod bfsk;
 pub mod bpsk;
