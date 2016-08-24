@@ -3,8 +3,8 @@ use super::util::{bytes_to_bits, max_symbol};
 
 pub struct QAM {
     bits_per_symbol: usize,
-    // Number of bits per carrier.
-    carrier_size: usize,
+    /// Number of bits in each I and Q.
+    bits_per_carrier: usize,
     max_symbol: f32,
     phase_cos: f32,
     phase_sin: f32,
@@ -21,7 +21,7 @@ impl QAM {
 
         QAM {
             bits_per_symbol: bits_per_symbol,
-            carrier_size: cs,
+            bits_per_carrier: cs,
             max_symbol: ms,
             phase_cos: phase.cos(),
             phase_sin: phase.sin(),
@@ -42,7 +42,7 @@ impl DigitalPhasor for QAM {
     fn bits_per_symbol(&self) -> usize { self.bits_per_symbol }
 
     fn i(&self, _: usize, b: &[u8]) -> f32 {
-        let (msb, lsb) = b.split_at(self.carrier_size);
+        let (msb, lsb) = b.split_at(self.bits_per_carrier);
 
         self.amplitude * (
             self.pos_bytes(msb) * self.phase_cos -
@@ -51,7 +51,7 @@ impl DigitalPhasor for QAM {
     }
 
     fn q(&self, _: usize, b: &[u8]) -> f32 {
-        let (msb, lsb) = b.split_at(self.carrier_size);
+        let (msb, lsb) = b.split_at(self.bits_per_carrier);
 
         self.amplitude * (
             self.pos_bytes(lsb) * self.phase_cos +
