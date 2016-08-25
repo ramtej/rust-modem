@@ -3,14 +3,14 @@ use std::f32::consts::PI;
 use super::DigitalPhasor;
 use super::util::bytes_to_bits;
 
-pub struct DQPSK {
+pub struct DCQPSK {
     amplitude: f32,
     even: bool,
 }
 
-impl DQPSK {
-    pub fn new(amplitude: f32) -> DQPSK {
-        DQPSK {
+impl DCQPSK {
+    pub fn new(amplitude: f32) -> DCQPSK {
+        DCQPSK {
             amplitude: amplitude,
             even: false,
         }
@@ -32,7 +32,7 @@ impl DQPSK {
     }
 }
 
-impl DigitalPhasor for DQPSK {
+impl DigitalPhasor for DCQPSK {
     fn bits_per_symbol(&self) -> usize { 2 }
 
     fn update(&mut self, _: usize, _: &[u8]) {

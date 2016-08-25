@@ -83,7 +83,7 @@ fn main() {
             AMPLITUDE, digital::mfsk::IncreaseMap)),
         "16psk" => Box::new(digital::mpsk::MPSK::new(4, 0.0, AMPLITUDE)),
         "oqpsk" => Box::new(digital::oqpsk::OQPSK::new(AMPLITUDE)),
-        "dqpsk" => Box::new(digital::dqpsk::DQPSK::new(AMPLITUDE)),
+        "dcqpsk" => Box::new(digital::dcqpsk::DCQPSK::new(AMPLITUDE)),
         "16cpfsk" => Box::new(digital::cpfsk::CPFSK::new(4, rates, AMPLITUDE, 1)),
         "16apsk" => Box::new(digital::apsk::APSK::new(AMPLITUDE, 4, vec![
             digital::apsk::Ring::new(0..4, 0.5, PI / 4.0),

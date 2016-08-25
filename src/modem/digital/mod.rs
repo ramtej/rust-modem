@@ -6,7 +6,7 @@ pub mod bask;
 pub mod bfsk;
 pub mod bpsk;
 pub mod cpfsk;
-pub mod dqpsk;
+pub mod dcqpsk;
 pub mod mfsk;
 pub mod mpsk;
 pub mod msk;
