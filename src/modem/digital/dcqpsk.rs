@@ -1,3 +1,7 @@
+/// Implements Dual-Constellation QPSK (aka π/4-QPSK), which rotates the QPSK
+/// constellation by π/4 between each symbol. As a result, the maximum phase shift is
+/// 3π/4, so the modulated signal never passes through the origin.
+
 use std::f32::consts::PI;
 
 use super::DigitalPhasor;
