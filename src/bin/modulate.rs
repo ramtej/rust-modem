@@ -89,6 +89,7 @@ fn main() {
             digital::apsk::Ring::new(0..4, 0.5, PI / 4.0),
             digital::apsk::Ring::new(4..16, 1.0, PI / 12.0),
         ])),
+        "dqpsk" => Box::new(digital::dqpsk::DQPSK::new(AMPLITUDE, PI / 4.0)),
         _ => panic!("invalid digital modulation"),
     };
 
