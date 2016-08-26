@@ -17,7 +17,7 @@ impl MSK {
     }
 
     fn inner(&self, s: usize) -> f32 {
-        PI/2.0 * s as f32 / self.samples_per_bit - PI/2.0
+        PI / 2.0 * s as f32 / self.samples_per_bit
     }
 }
 
@@ -29,6 +29,6 @@ impl DigitalPhasor for MSK {
     }
 
     fn q(&self, s: usize, b: &[u8]) -> f32 {
-        self.amplitude * bit_to_sign(b[1]) * self.inner(s).sin()
+        -self.amplitude * bit_to_sign(b[1]) * self.inner(s).sin()
     }
 }
