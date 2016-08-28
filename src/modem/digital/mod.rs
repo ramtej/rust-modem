@@ -7,7 +7,7 @@ pub mod bfsk;
 pub mod bpsk;
 pub mod cpfsk;
 pub mod dcqpsk;
-pub mod dqpsk;
+pub mod dmpsk;
 pub mod mfsk;
 pub mod mpsk;
 pub mod msk;
