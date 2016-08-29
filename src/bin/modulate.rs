@@ -90,6 +90,7 @@ fn main() {
             digital::apsk::Ring::new(4..16, 1.0, PI / 12.0),
         ])),
         "dqpsk" => Box::new(digital::dmpsk::DMPSK::new(2, AMPLITUDE, PI / 4.0, PI / 2.0)),
+        "dbpsk" => Box::new(digital::dmpsk::DMPSK::new(1, AMPLITUDE, PI / 4.0, PI)),
         _ => panic!("invalid digital modulation"),
     };
 
